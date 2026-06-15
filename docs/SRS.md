@@ -2,9 +2,10 @@
 
 ## NetBox Integration for vSphere
 
-**Version:** 1.0
+**Version:** 1.1
 **Date:** 2026-06-15
 **Status:** Draft
+**Changelog:** v1.1 — Updated CLI flags, env vars, marked planned commands, added references
 
 ---
 
@@ -50,6 +51,11 @@ authoritative source. NetBox is the output.
 | **Natural Key** | Business key used to match domain objects to NetBox records |
 | **ACL** | Anti-Corruption Layer — adapter between domain and external API |
 | **Bootstrap** | First-run creation of prerequisite NetBox metadata |
+| **CLI** | Command-Line Interface (Click framework) |
+| **Diff** | Computation of creates/updates/unchanged between vSphere and NetBox |
+| **FQDN** | Fully Qualified Domain Name (ESXi host identifier) |
+| **Managed Object Reference** | vSphere unique identifier for inventory objects (mor) |
+| **Upsert** | Update if exists, insert if new (PATCH or POST) |
 
 ### 1.4 References
 
@@ -57,6 +63,10 @@ authoritative source. NetBox is the output.
 |---|---|
 | Vision Document | `docs/vision.md` |
 | Domain Model | `docs/domains.md` |
+| Software Architecture | `docs/architecture.md` |
+| Project Standards | `docs/standards.md` |
+| Project Plan | `docs/project-plan.md` |
+| Architecture Decisions | `docs/adr/index.md` |
 | NetBox Best Practices | `.agents/skills/netbox-integration-best-practices/` |
 
 ---
@@ -412,7 +422,7 @@ Datastore.mor               → InventoryItem.custom_fields.vcenter_mor
 - Deactivates (status → decommissioning) rather than hard-deletes
 - Reports pruned objects in sync summary
 
-#### FR-014: Check Command
+#### FR-014: Check Command [PLANNED]
 
 | Attribute | Value |
 |---|---|
@@ -421,14 +431,14 @@ Datastore.mor               → InventoryItem.custom_fields.vcenter_mor
 | **Description** | Validate connectivity to vCenter and NetBox |
 
 **Requirements:**
-- `netbox-vsphere-sync check` command
+- `nvs-sync check` command
 - Tests vCenter connection (SmartConnect)
 - Tests NetBox connection (API status)
 - Tests Vault connection (if enabled)
 - Reports OK/FAIL for each
 - Exit code 0 = all OK, 2 = any failure
 
-#### FR-015: Bootstrap Command
+#### FR-015: Bootstrap Command [PLANNED]
 
 | Attribute | Value |
 |---|---|
@@ -437,7 +447,7 @@ Datastore.mor               → InventoryItem.custom_fields.vcenter_mor
 | **Description** | Create prerequisite NetBox metadata only |
 
 **Requirements:**
-- `netbox-vsphere-sync bootstrap` command
+- `nvs-sync bootstrap` command
 - Creates Manufacturers, Roles, ClusterTypes, Custom Fields
 - Does NOT sync entities
 - Idempotent: safe to run multiple times
@@ -454,8 +464,8 @@ Datastore.mor               → InventoryItem.custom_fields.vcenter_mor
 
 **Requirements:**
 - Configuration sources (in precedence order, highest first):
-  1. CLI flags (--vcenter-host, --netbox-url, etc.)
-  2. Environment variables (VCENTER_HOST, NVS_NETBOX_URL, etc.)
+  1. CLI flags (--vcenter-username, --vcenter-password, --netbox-token)
+  2. Environment variables (NVS_VCENTER_USERNAME, NVS_VCENTER_PASSWORD, NVS_NETBOX_TOKEN)
   3. Vault secrets (if vault.enabled)
   4. YAML config file (specified via --config or NVS_CONFIG)
   5. Defaults
@@ -605,9 +615,30 @@ Datastore.mor               → InventoryItem.custom_fields.vcenter_mor
 | Attribute | Value |
 |---|---|
 | Framework | Click |
-| Commands | sync, check, bootstrap, config |
-| Flags | --dry-run, --prune, --verbose, --quiet, --version |
-| Config | --config FILE |
+| Entry point | `nvs-sync` (defined in `pyproject.toml [project.scripts]`) |
+| Commands | sync (implemented), check, bootstrap, config (planned) |
+| Flags | --dry-run, --prune, --vcenter-insecure, --netbox-insecure |
+| Config | --config FILE (required) |
+
+```
+nvs-sync [OPTIONS] COMMAND [ARGS]...
+
+Options:
+  -c, --config FILE            Path to YAML config file  [env: NVS_CONFIG]
+  --dry-run                    Preview changes without writing
+  --prune                      Deactivate orphaned objects
+  --vcenter-username TEXT      vCenter username  [env: NVS_VCENTER_USERNAME]
+  --vcenter-password TEXT      vCenter password  [env: NVS_VCENTER_PASSWORD]
+  --netbox-token TEXT          NetBox API token  [env: NVS_NETBOX_TOKEN]
+  --vcenter-insecure           Disable vCenter TLS verification
+  --netbox-insecure            Disable NetBox TLS verification
+  --help                       Show this message and exit
+
+Commands:
+  sync       Run a full synchronisation
+```
+
+> **Note:** The `bootstrap`, `check`, and `config` commands are planned but not yet implemented.
 
 ---
 
@@ -711,8 +742,8 @@ Device ────────┤   (depends on Site + Cluster)
 ### 8.3 Network Security
 
 - TLS verification enabled by default for all endpoints
-- Override with `--no-verify-vcenter` / `--no-verify-netbox` flags
-- Vault TLS verification also configurable
+- Override with `--vcenter-insecure` / `--netbox-insecure` flags
+- Vault TLS verification also configurable via `vault.ssl_verify: false` in YAML
 
 ---
 
@@ -757,8 +788,8 @@ Device ────────┤   (depends on Site + Cluster)
 | AC-003 | Re-running sync produces 0 creates, 0 updates (idempotent) |
 | AC-004 | `--dry-run` shows changes without modifying NetBox |
 | AC-005 | `--prune` deactivates orphaned objects |
-| AC-006 | `check` validates all three backends (vCenter, NetBox, Vault) |
-| AC-007 | `bootstrap` creates all prerequisite metadata |
+| AC-006 | `check` validates all three backends (vCenter, NetBox, Vault) — requires check command (planned) |
+| AC-007 | `bootstrap` creates all prerequisite metadata — requires bootstrap command (planned) |
 | AC-008 | Config loading respects precedence (CLI > env > Vault > YAML) |
 | AC-009 | Vault integration works with AppRole auth |
 | AC-010 | Lock file prevents concurrent runs |
@@ -883,6 +914,15 @@ inventory_roles:
   bios: "BIOS"
   fallback: "Hardware"
 ```
+
+---
+
+## 13. Change Log
+
+| Version | Date | Changes |
+|---|---|---|
+| 1.0 | 2026-06-15 | Initial SRS |
+| 1.1 | 2026-06-15 | Update CLI flags, env vars, mark planned commands, add references, add glossary |
 
 ---
 
