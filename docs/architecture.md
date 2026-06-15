@@ -131,13 +131,13 @@
 
 #### CLI Layer
 
-| Component | File | Responsibility | Dependencies |
-|---|---|---|---|
-| **app.py** | `cli/app.py` | Click group, global options (--config, --dry-run, --verbose) | ConfigLoader |
-| **sync command** | `cli/commands/sync.py` | Entry point for `sync` subcommand | SyncEngine, ReportGenerator |
-| **check command** | `cli/commands/check.py` | Validates connectivity to all backends | VSphereACL, NetBoxACL, VaultACL |
-| **bootstrap command** | `cli/commands/bootstrap.py` | Creates prerequisite NetBox metadata | NetBoxACL (bootstrap_metadata) |
-| **config command** | `cli/commands/config.py` | Prints effective configuration | ConfigLoader |
+| Component | File | Responsibility | Dependencies | Status |
+|---|---|---|---|---|
+| **app.py** | `cli/app.py` | Click group, global options | — | Implemented |
+| **sync command** | `cli/commands/sync.py` | Entry point for `sync` subcommand | SyncEngine, all repos | Implemented |
+| **check command** | `cli/commands/check.py` | Validates connectivity to all backends | VSphereClient, NetBoxClient, VaultClient | Planned |
+| **bootstrap command** | `cli/commands/bootstrap.py` | Creates prerequisite NetBox metadata | Bootstrapper | Planned |
+| **config command** | `cli/commands/config.py` | Prints effective configuration | ConfigLoader | Planned |
 
 #### Application Layer
 
@@ -467,12 +467,12 @@ Commands:
 │  │                    Credential Resolution Order                         │  │
 │  │                                                                        │  │
 │  │   Priority 1 (highest): CLI flags                                      │  │
-│  │     --vcenter-host, --vcenter-user, --vcenter-pass                    │  │
-│  │     --netbox-url, --netbox-token                                       │  │
+│  │     --vcenter-username, --vcenter-password                             │  │
+│  │     --netbox-token                                                     │  │
 │  │                                                                        │  │
 │  │   Priority 2: Environment variables                                    │  │
-│  │     NVS_VCENTER_HOST, NVS_VCENTER_USER, NVS_VCENTER_PASS            │  │
-│  │     NVS_NETBOX_URL, NVS_NETBOX_TOKEN                                  │  │
+│  │     NVS_VCENTER_USERNAME, NVS_VCENTER_PASSWORD                        │  │
+│  │     NVS_NETBOX_TOKEN                                                   │  │
 │  │                                                                        │  │
 │  │   Priority 3: Vault secrets (if vault.enabled)                         │  │
 │  │     kv-v2/vcenter/creds → VCENTER_USER, VCENTER_PASS                 │  │
@@ -516,8 +516,8 @@ Commands:
 
 | Endpoint | Default | Override | Verification |
 |---|---|---|---|
-| vCenter | `verify_ssl: true` | `--no-verify-vcenter` flag or `vcenter.verify_ssl: false` in YAML | SSL cert verification |
-| NetBox | `verify_ssl: true` | `--no-verify-netbox` flag or `netbox.verify_ssl: false` in YAML | SSL cert verification |
+| vCenter | `verify_ssl: true` | `--vcenter-insecure` flag or `vcenter.verify_ssl: false` in YAML | SSL cert verification |
+| NetBox | `verify_ssl: true` | `--netbox-insecure` flag or `netbox.verify_ssl: false` in YAML | SSL cert verification |
 | Vault | `ssl_verify: true` | `vault.ssl_verify: false` in YAML | SSL cert verification |
 
 ### 5.4 Lock File Security
@@ -595,10 +595,8 @@ The NetBox API token must have these permissions:
 │  │  │   schedule: "*/15 * * * *"        │                                   │
 │  │  │   image: nvs-sync:latest          │                                   │
 │  │  │   env:                            │                                   │
-│  │  │     - NVS_VCENTER_HOST            │                                   │
-│  │  │     - NVS_VCENTER_USER            │                                   │
-│  │  │     - NVS_VCENTER_PASS (from Secret)│                                  │
-│  │  │     - NVS_NETBOX_URL              │                                   │
+│  │  │     - NVS_VCENTER_USERNAME        │                                   │
+│  │  │     - NVS_VCENTER_PASSWORD (from Secret)│                              │
 │  │  │     - NVS_NETBOX_TOKEN (from Secret)│                                 │
 │  │  │   secrets:                        │                                   │
 │  │  │     - nvs-vcenter-creds           │                                   │
@@ -623,20 +621,20 @@ The NetBox API token must have these permissions:
 ### 6.2 Dockerfile
 
 ```dockerfile
-FROM python:3.11-slim AS base
-
+# Stage 1: Install dependencies only (layer cache)
+FROM python:3.11-slim AS deps
 WORKDIR /app
-
 COPY pyproject.toml .
 RUN pip install --no-cache-dir .
 
+# Stage 2: Production runtime
+FROM python:3.11-slim AS runtime
+RUN addgroup --gid 1000 nvs && adduser --uid 1000 --gid 1000 --disabled-password --gecos "" nvs
+WORKDIR /app
+COPY --from=deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=deps /usr/local/bin/nvs-sync /usr/local/bin/nvs-sync
 COPY src/ src/
-
-RUN useradd --create-home nvs
 USER nvs
-
-VOLUME ["/etc/netbox-vsphere-sync"]
-
 ENTRYPOINT ["nvs-sync"]
 ```
 
@@ -697,7 +695,7 @@ Wants=network-online.target
 
 [Service]
 Type=oneshot
-ExecStart=/usr/local/bin/netbox-vsphere-sync sync \
+ExecStart=/usr/local/bin/nvs-sync sync \
     --config /etc/netbox-vsphere-sync/config.yaml
 StandardOutput=append:/var/log/netbox-vsphere-sync.log
 StandardError=append:/var/log/netbox-vsphere-sync.log
