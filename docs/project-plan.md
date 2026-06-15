@@ -63,7 +63,7 @@ Create an empty `py.typed` marker file so type checkers (pyright, mypy) recogniz
 
 ---
 
-### Task 1.4 — Add pytest configuration to `pyproject.toml` ✅ (partial)
+### Task 1.4 — Add pytest configuration to `pyproject.toml` ✅
 
 **Description:**
 Add `[tool.pytest.ini_options]` section with markers (`unit`, `integration`, `slow`, `vcr`) and default `addopts`. This consolidates test configuration into one file.
@@ -72,11 +72,9 @@ Add `[tool.pytest.ini_options]` section with markers (`unit`, `integration`, `sl
 
 **Estimated Complexity:** Low
 
-**Status:** Partially complete — `unit`, `integration`, `slow` markers added. `vcr` marker pending (see Task 1.5).
-
 **Definition of Done:**
 - [x] `pyproject.toml` contains `[tool.pytest.ini_options]` with markers and `addopts`
-- [ ] `pytest --markers` shows `unit`, `integration`, `slow`, `vcr`
+- [x] `pytest --markers` shows `unit`, `integration`, `slow`, `vcr`
 - [x] `make test` passes without regression
 
 ---
@@ -96,6 +94,22 @@ Create an empty `py.typed` marker file (PEP 561) so type checkers recognize this
 - [ ] `pyproject.toml` pytest markers include `vcr: Tests using recorded HTTP cassettes`
 - [ ] `pytest --markers` shows all 4 markers: `unit`, `integration`, `slow`, `vcr`
 - [ ] `make check` passes
+
+---
+
+### Task 1.6 — Add LICENSE file
+
+**Description:**
+Create the Apache 2.0 LICENSE file at the repository root. This is referenced in standards.md §1.1 and pyproject.toml but doesn't exist yet.
+
+**Dependencies:** None
+
+**Estimated Complexity:** Low
+
+**Definition of Done:**
+- [ ] `LICENSE` file exists at repository root
+- [ ] File contains Apache License 2.0 full text
+- [ ] `pyproject.toml` license field matches LICENSE file
 
 ---
 
@@ -431,23 +445,24 @@ Replace the current minimal README with comprehensive documentation:
 
 ---
 
-### Task 6.2 — Fix documentation inconsistencies
+### Task 6.2 — Fix documentation inconsistencies ✅ (partial)
 
 **Description:**
-Fix outdated references in architecture.md that don't match the actual implementation:
-- §4.4 CLI Interface: Update to match actual CLI flags (`nvs-sync`, correct env vars)
-- §6.2 Dockerfile: Update entrypoint from `netbox-vsphere-sync` to `nvs-sync`
-- §2.2 Component Details: Mark `check`, `bootstrap`, `config` commands as planned
+Fix outdated references in architecture.md and SRS.md that don't match the actual implementation.
 
 **Dependencies:** None
 
 **Estimated Complexity:** Low
 
+**Status:** Partially complete — CLI flags, env vars, Dockerfile, and planned command markers updated. Remaining: verify all cross-document links.
+
 **Definition of Done:**
-- [ ] `architecture.md` §4.4 shows `nvs-sync` CLI with correct flags
-- [ ] `architecture.md` §6.2 shows `ENTRYPOINT ["nvs-sync"]`
-- [ ] `architecture.md` §2.2 marks unimplemented commands as planned
-- [ ] All links between docs are valid
+- [x] `architecture.md` §4.4 shows `nvs-sync` CLI with correct flags
+- [x] `architecture.md` §6.2 shows multi-stage Dockerfile
+- [x] `architecture.md` §2.2 marks unimplemented commands as planned
+- [x] `SRS.md` §5.4 shows correct CLI interface
+- [x] `SRS.md` FR-014, FR-015 marked as [PLANNED]
+- [ ] All cross-document links are valid
 
 ---
 
@@ -479,10 +494,10 @@ Epic 4 (Docker) ─────────────────────�
 
 | Epic | Tasks | Estimated Effort |
 |------|-------|-----------------|
-| 1. Project Structure & Packaging | 5 | ~1.5 hours |
+| 1. Project Structure & Packaging | 6 | ~2 hours |
 | 2. Logging & Observability | 3 | ~2 hours |
 | 3. NetBox Integration Best Practices | 4 | ~3 hours |
 | 4. Docker Containerization | 5 | ~2 hours |
 | 5. CI/CD Pipeline | 2 | ~2.5 hours |
 | 6. Documentation | 2 | ~1.5 hours |
-| **Total** | **21** | **~12.5 hours** |
+| **Total** | **22** | **~13 hours** |
