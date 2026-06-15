@@ -31,25 +31,27 @@ netbox-vsphere-sync/
 ├── pyproject.toml              # Dependencies, metadata, entry points (PEP 621)
 ├── Makefile                    # Common command recipes
 ├── README.md                   # Quickstart and usage
-├── LICENSE                     # Apache 2.0
+├── LICENSE                     # Apache 2.0 (planned)
 ├── .gitignore
 ├── ruff.toml                   # Linter + formatter configuration
 ├── pyrightconfig.json          # Strict type-checker configuration
 ├── .pre-commit-config.yaml     # Pre-commit hooks
-├── Dockerfile                  # Multi-stage production image
-├── .dockerignore               # Docker build context exclusions
-├── docker-compose.yml          # Local development/testing orchestration
+├── Dockerfile                  # Multi-stage production image (planned)
+├── .dockerignore               # Docker build context exclusions (planned)
+├── docker-compose.yml          # Local development/testing orchestration (planned)
 ├── .github/
 │   └── workflows/
-│       ├── ci.yml              # CI pipeline (lint, typecheck, test, build, docker)
-│       └── release.yml         # Release pipeline (PyPI + Docker registry)
-├── docs/                       # System documentation
+│       ├── ci.yml              # CI pipeline (planned)
+│       └── release.yml         # Release pipeline (planned)
+├── docs/
 │   ├── vision.md               # Architecture vision and strategy
 │   ├── domains.md              # DDD domain model, bounded contexts
 │   ├── architecture.md         # System, component, API, security, deployment design
 │   ├── SRS.md                  # Software requirements specification
 │   ├── standards.md            # This file — project standards
-│   └── project-plan.md         # Epics and tasks for development
+│   ├── project-plan.md         # Epics and tasks for development
+│   └── adr/                    # Architecture Decision Records
+│       └── index.md            # ADR index (38 decisions)
 ├── src/                        # Source code
 │   └── netbox_vsphere_sync/
 │       ├── __init__.py         # Version, __all__
@@ -603,12 +605,20 @@ def test_netbox_fetch_all_sites(): ...
 
 ### 6.8 Run Commands
 
+**Available now:**
 ```bash
-make test          # Full test suite with coverage
-make test-unit     # pytest -m unit
-make test-integration  # pytest -m integration
+make test          # Full test suite
+make test-cov      # Full test suite with coverage (target: >= 80%)
 pytest --cov-report=html  # HTML coverage report
 pytest -k "vlan"   # Run only VLAN-related tests
+```
+
+**Planned (see project-plan.md):**
+```bash
+make test-unit     # pytest -m unit
+make test-integration  # pytest -m integration
+make build         # python -m build
+make pre-commit    # pre-commit install
 ```
 
 ---
@@ -620,10 +630,10 @@ pytest -k "vlan"   # Run only VLAN-related tests
 ```
 Resolution order (highest to lowest):
 
-  1. CLI flags           --vcenter-pass '...'
-  2. Environment vars     NVS_VCENTER_PASS
-  3. Vault secrets        kv-v2/vcenter/creds → VCENTER_PASS
-  4. YAML config file     vcenter.password
+  1. CLI flags           --vcenter-username, --vcenter-password, --netbox-token
+  2. Environment vars     NVS_VCENTER_USERNAME, NVS_VCENTER_PASSWORD, NVS_NETBOX_TOKEN
+  3. Vault secrets        kv-v2/vcenter/creds → VCENTER_USER, VCENTER_PASS
+  4. YAML config file     vcenter.username, vcenter.password, netbox.token
   5. Defaults             None (fails with actionable error)
 ```
 
