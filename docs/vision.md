@@ -924,34 +924,29 @@ netbox-vsphere-sync/
 ### 8.3 CLI Interface
 
 ```
-Usage: netbox-vsphere-sync [OPTIONS] COMMAND [ARGS]...
+Usage: nvs-sync [OPTIONS] COMMAND [ARGS]...
 
 Options:
-  -c, --config FILE        Path to YAML config file  [env: NVS_CONFIG]
-  --vcenter-host TEXT      vCenter hostname  [env: NVS_VCENTER_HOST]
-  --vcenter-user TEXT      vCenter username  [env: NVS_VCENTER_USER]
-  --vcenter-pass TEXT      vCenter password  [env: NVS_VCENTER_PASS]
-  --netbox-url TEXT        NetBox base URL  [env: NVS_NETBOX_URL]
-  --netbox-token TEXT      NetBox API token  [env: NVS_NETBOX_TOKEN]
-  --vault-addr TEXT        Vault server address  [env: VAULT_ADDR]
-  --vault-role-id TEXT     Vault AppRole RoleID  [env: VAULT_ROLE_ID]
-  --vault-secret-id TEXT   Vault AppRole SecretID  [env: VAULT_SECRET_ID]
-  --dry-run                Preview changes without applying
-  --prune                  Remove orphaned objects (opt-in)
-  --verbose / --quiet      Log verbosity
-  --version                Show version and exit
+  -c, --config FILE            Path to YAML config file  [env: NVS_CONFIG]
+  --dry-run                    Preview changes without writing
+  --prune                      Deactivate orphaned objects
+  --vcenter-username TEXT      vCenter username  [env: NVS_VCENTER_USERNAME]
+  --vcenter-password TEXT      vCenter password  [env: NVS_VCENTER_PASSWORD]
+  --netbox-token TEXT          NetBox API token  [env: NVS_NETBOX_TOKEN]
+  --vcenter-insecure           Disable vCenter TLS verification
+  --netbox-insecure            Disable NetBox TLS verification
+  --help                       Show this message and exit
 
 Commands:
   sync       Run a full synchronization
-  bootstrap  Create prerequisite NetBox objects only
-  check      Validate connectivity to vCenter and NetBox
-  config     Print effective configuration and exit
 ```
+
+> **Note:** The `bootstrap`, `check`, and `config` commands are planned but not yet implemented.
 
 ### 8.4 Sync Report Output
 
 ```
-$ netbox-vsphere-sync sync
+$ nvs-sync sync
 
 NetBox vSphere Sync ── run 2026-06-14T10:30:00Z
 ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

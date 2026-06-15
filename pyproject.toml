@@ -43,5 +43,14 @@ nvs-sync = "netbox_vsphere_sync.cli.app:main"
 requires = ["setuptools>=68.0"]
 build-backend = "setuptools.build_meta"
 
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = [
+    "unit: Unit tests (no external dependencies)",
+    "integration: Integration tests (require mock servers or vcrpy)",
+    "slow: Tests that take >1s to run",
+]
+addopts = "-v --tb=short"
+
 [tool.setuptools.packages.find]
 where = ["src"]

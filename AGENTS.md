@@ -35,19 +35,21 @@ netbox-vsphere-sync/
 ├── pyproject.toml              # Dependencies, metadata, entry points (PEP 621)
 ├── Makefile                    # Common command recipes
 ├── README.md                   # Quickstart and usage
-├── LICENSE                     # Apache 2.0
 ├── .gitignore
 ├── ruff.toml                   # Linter + formatter configuration
 ├── pyrightconfig.json          # Strict type-checker configuration
 ├── .pre-commit-config.yaml     # Pre-commit hooks
-├── .github/workflows/          # CI pipeline (GitHub Actions)
+├── Dockerfile                  # Multi-stage production image (planned)
+├── .dockerignore               # Docker build context exclusions (planned)
+├── docker-compose.yml          # Local development/testing (planned)
 │
 ├── docs/                       # System documentation
 │   ├── vision.md               # Architecture vision and strategy
 │   ├── domains.md              # DDD domain model and bounded contexts
 │   ├── architecture.md         # System context, components, deployment
 │   ├── SRS.md                  # Software requirements specification
-│   └── standards.md            # Coding, git, testing, security standards
+│   ├── standards.md            # Coding, git, testing, security standards
+│   └── project-plan.md         # Epics and tasks for development
 │
 ├── src/
 │   └── netbox_vsphere_sync/    # Main package
@@ -67,26 +69,29 @@ netbox-vsphere-sync/
 │       │   ├── bootstrapper.py
 │       │   └── event_log.py
 │       ├── infrastructure/     # Adapters: NetBox ACL, vSphere ACL, Vault
+│       │   ├── config/
+│       │   │   ├── loader.py
+│       │   │   ├── lock_manager.py
+│       │   │   └── secret_resolver.py
 │       │   ├── netbox/
 │       │   │   ├── acl.py
 │       │   │   ├── client.py
 │       │   │   └── repositories/
 │       │   ├── vsphere/
 │       │   │   ├── acl.py
+│       │   │   ├── client.py
 │       │   │   └── collector.py
-│       │   ├── vault/
-│       │   │   ├── acl.py
-│       │   │   └── client.py
-│       │   └── config/
-│       │       ├── loader.py
-│       │       └── secret_resolver.py
+│       │   └── vault/
+│       │       ├── acl.py
+│       │       └── client.py
 │       ├── cli/                # Click commands
 │       │   ├── __main__.py
 │       │   ├── app.py
 │       │   └── commands/
+│       │       └── sync.py     # Only implemented command
 │       └── report/             # Observability: reports, logging
-│           ├── generator.py
-│           └── console.py
+│           ├── console.py
+│           └── generator.py
 │
 └── tests/                      # Mirrors src/ structure
     ├── conftest.py
@@ -191,6 +196,7 @@ main ─────●─────────●─────────
 | `docs/architecture.md` | System context, components, API, security, deployment |
 | `docs/SRS.md` | Functional and non-functional requirements, acceptance criteria |
 | `docs/standards.md` | Coding, git, testing, security standards |
+| `docs/project-plan.md` | Epics and tasks for development |
 
 ---
 

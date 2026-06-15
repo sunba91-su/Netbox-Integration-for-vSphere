@@ -16,6 +16,9 @@
 8. [Linting & Formatting](#8-linting--formatting)
 9. [Documentation Standards](#9-documentation-standards)
 10. [Build Commands](#10-build-commands)
+11. [Docker Standards](#11-docker-standards)
+12. [CI/CD Standards](#12-cicd-standards)
+13. [NetBox Integration Standards](#13-netbox-integration-standards)
 
 ---
 
@@ -33,16 +36,24 @@ netbox-vsphere-sync/
 ├── ruff.toml                   # Linter + formatter configuration
 ├── pyrightconfig.json          # Strict type-checker configuration
 ├── .pre-commit-config.yaml     # Pre-commit hooks
-├── .github/workflows/          # CI pipeline (GitHub Actions)
+├── Dockerfile                  # Multi-stage production image
+├── .dockerignore               # Docker build context exclusions
+├── docker-compose.yml          # Local development/testing orchestration
+├── .github/
+│   └── workflows/
+│       ├── ci.yml              # CI pipeline (lint, typecheck, test, build, docker)
+│       └── release.yml         # Release pipeline (PyPI + Docker registry)
 ├── docs/                       # System documentation
 │   ├── vision.md               # Architecture vision and strategy
 │   ├── domains.md              # DDD domain model, bounded contexts
-│   ├── architecture.md         # System, component, API, deployment design
+│   ├── architecture.md         # System, component, API, security, deployment design
 │   ├── SRS.md                  # Software requirements specification
-│   └── standards.md            # This file — project standards
+│   ├── standards.md            # This file — project standards
+│   └── project-plan.md         # Epics and tasks for development
 ├── src/                        # Source code
 │   └── netbox_vsphere_sync/
-│       ├── __init__.py
+│       ├── __init__.py         # Version, __all__
+│       ├── py.typed            # PEP 561 type marker
 │       ├── domain/             # Core domain (pure Python, no infra imports)
 │       ├── application/        # Use cases (sync engine, diff engine)
 │       ├── infrastructure/     # Adapters (NetBox, vSphere, Vault, config)
@@ -61,85 +72,75 @@ netbox-vsphere-sync/
 
 ```
 src/netbox_vsphere_sync/
-├── __init__.py                 # Version, __all__, null export
+├── __init__.py                 # Version, __all__
 ├── domain/
 │   ├── __init__.py
-│   ├── model/                  # Entities, value objects
-│   │   ├── __init__.py
-│   │   ├── natural_key.py
-│   │   ├── site.py
-│   │   ├── cluster.py
-│   │   ├── host.py
-│   │   ├── network.py
-│   │   ├── inventory.py
-│   │   ├── vsphere/            # vSphere-side domain objects
-│   │   │   ├── __init__.py
-│   │   │   ├── datacenter.py
-│   │   │   ├── cluster.py
-│   │   │   ├── host.py
-│   │   │   ├── portgroup.py
-│   │   │   ├── vmknic.py
-│   │   │   ├── datastore.py
-│   │   │   └── hardware.py
-│   │   └── config/             # Pydantic config models
-│   │       ├── __init__.py
-│   │       ├── vsphere.py
-│   │       ├── netbox.py
-│   │       ├── vault.py
-│   │       ├── sync.py
-│   │       └── vlan.py
+│   ├── constants.py            # Constants (dependency order, defaults)
 │   ├── events.py               # Domain event hierarchy
-│   ├── ports.py                # Repository protocols (typing.Protocol)
 │   ├── exceptions.py           # Domain exception hierarchy
-│   └── constants.py            # Constants (dependency order, defaults)
+│   ├── ports.py                # Repository protocols (typing.Protocol)
+│   └── model/
+│       ├── __init__.py
+│       ├── vsphere/            # vSphere-side domain objects
+│       │   └── __init__.py     # Site, Cluster, HostSystem, Interface, etc.
+│       └── config/             # Pydantic config models
+│           ├── __init__.py
+│           ├── app.py          # AppConfig (root config model)
+│           ├── bootstrap.py    # BootstrapConfig
+│           ├── inventory.py    # InventoryConfig
+│           ├── netbox.py       # NetBoxConfig
+│           ├── network.py      # NetworkConfig, VlanAllocationConfig
+│           ├── sync.py         # SyncConfig
+│           ├── vault.py        # VaultConfig
+│           └── vcenter.py      # VCenterConfig
 ├── application/
 │   ├── __init__.py
-│   ├── sync_engine.py          # Pipeline orchestrator
-│   ├── diff_engine.py          # Create/update/unchanged computation
-│   ├── dependency_resolver.py  # Topological sort engine
 │   ├── bootstrapper.py         # Prerequisite metadata creator
-│   └── event_log.py            # Domain event collector
+│   ├── dependency_resolver.py  # Topological sort engine
+│   ├── diff_engine.py          # Create/update/unchanged computation
+│   ├── event_log.py            # Domain event collector
+│   └── sync_engine.py          # Pipeline orchestrator
 ├── infrastructure/
 │   ├── __init__.py
+│   ├── config/
+│   │   ├── __init__.py
+│   │   ├── loader.py           # YAML + env + CLI → AppConfig
+│   │   ├── lock_manager.py     # PID-based lock file
+│   │   └── secret_resolver.py  # Vault → env var merge
 │   ├── netbox/
 │   │   ├── __init__.py
 │   │   ├── acl.py              # Anti-corruption layer (domain ↔ API)
 │   │   ├── client.py           # pynetbox wrapper
 │   │   └── repositories/       # Per-entity repository implementations
 │   │       ├── __init__.py
-│   │       ├── site.py
-│   │       ├── cluster.py
-│   │       ├── device.py
-│   │       ├── vlan.py
-│   │       ├── interface.py
-│   │       ├── ip_address.py
-│   │       └── inventory_item.py
-│   ├── vsphere/
-│   │   ├── __init__.py
-│   │   ├── acl.py              # Anti-corruption layer (PyVmomi ↔ domain)
-│   │   └── collector.py        # Paginated property collector
+│   │       ├── bootstrap_repository.py
+│   │       ├── cluster_repository.py
+│   │       ├── device_repository.py
+│   │       ├── interface_repository.py
+│   │       ├── inventory_item_repository.py
+│   │       ├── ip_address_repository.py
+│   │       ├── site_repository.py
+│   │       └── vlan_repository.py
 │   ├── vault/
 │   │   ├── __init__.py
 │   │   ├── acl.py              # Anti-corruption layer (hvac ↔ secrets)
 │   │   └── client.py           # hvac wrapper
-│   └── config/
+│   └── vsphere/
 │       ├── __init__.py
-│       ├── loader.py           # YAML + env + CLI → AppConfig
-│       └── secret_resolver.py  # Vault → env var merge
+│       ├── acl.py              # Anti-corruption layer (PyVmomi ↔ domain)
+│       ├── client.py           # PyVmomi SmartConnect wrapper
+│       └── collector.py        # Paginated property collector
 ├── cli/
 │   ├── __init__.py
 │   ├── __main__.py             # python -m entry point
 │   ├── app.py                  # Click group with global options
 │   └── commands/
 │       ├── __init__.py
-│       ├── sync.py
-│       ├── check.py
-│       ├── bootstrap.py
-│       └── config.py
+│       └── sync.py             # Sync command (only implemented command)
 └── report/
     ├── __init__.py
-    ├── generator.py            # SyncReport from SyncRun
-    └── console.py              # Rich console rendering
+    ├── console.py              # Rich console rendering
+    └── generator.py            # SyncReport from SyncRun
 ```
 
 ### 1.3 Test Structure
@@ -150,31 +151,22 @@ tests/
 ├── conftest.py                 # Session-scoped fixtures, plugin registration
 ├── domain/
 │   ├── __init__.py
-│   ├── test_events.py
-│   ├── test_natural_key.py
 │   └── model/
 │       ├── __init__.py
-│       ├── test_site.py
-│       ├── test_cluster.py
-│       ├── test_host.py
-│       ├── test_network.py
-│       └── test_inventory.py
+│       └── test_vsphere_entities.py  # Entity creation, defaults, custom fields
 ├── application/
 │   ├── __init__.py
-│   ├── test_sync_engine.py
-│   ├── test_diff_engine.py
-│   └── test_dependency_resolver.py
+│   ├── test_dependency_resolver.py   # Dependency ordering, sorting
+│   ├── test_diff_engine.py           # Natural key generation, diff computation
+│   └── test_event_log.py             # Event recording, counting
 ├── infrastructure/
 │   ├── __init__.py
 │   ├── netbox/
-│   │   ├── __init__.py
-│   │   └── test_repositories.py
+│   │   └── __init__.py               # (tests pending)
 │   └── vsphere/
-│       ├── __init__.py
-│       └── test_collector.py
+│       └── __init__.py               # (tests pending)
 └── cli/
-    ├── __init__.py
-    └── test_commands.py
+    └── __init__.py                   # (tests pending)
 ```
 
 ### 1.4 Layer Import Rules
@@ -709,27 +701,19 @@ The NetBox API token requires:
 ```toml
 # ruff.toml
 target-version = "py311"
-line-length = 88
-
-[lint]
-select = [
-    "E",     # pycodestyle errors
-    "W",     # pycodestyle warnings
-    "F",     # pyflakes
-    "I",     # isort
-    "N",     # pep8-naming
-    "UP",    # pyupgrade (target py311)
-    "RUF",   # ruff-specific
-    "B",     # flake8-bugbear
-]
-
-[lint.per-file-ignores]
-"tests/*" = ["N802"]  # allow test_ prefixed function names
+line-length = 100
 
 [format]
 quote-style = "double"
 indent-style = "space"
 line-ending = "lf"
+
+[lint]
+select = ["E", "W", "F", "I", "N", "UP", "RUF", "B"]
+ignore = []
+
+[lint.per-file-ignores]
+"tests/**" = ["RUF"]
 ```
 
 ### 8.2 Pre-commit Hooks
@@ -738,18 +722,24 @@ line-ending = "lf"
 # .pre-commit-config.yaml
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.9.0
+    rev: v0.6.9
     hooks:
-      - id: ruff
-        args: [--fix]
+      - id: ruff-check
+        args: ["--fix"]
       - id: ruff-format
-  - repo: local
+
+  - repo: https://github.com/RobertCraigie/pyright-python
+    rev: v1.1.380
     hooks:
       - id: pyright
-        name: pyright
-        entry: pyright
-        language: system
-        types: [python]
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.6.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-toml
 ```
 
 ### 8.3 Enforcement
@@ -793,18 +783,241 @@ repos:
 
 | Command | Action |
 |---|---|
-| `make install` | Install package + dev dependencies (`pip install -e ".[dev]"`) |
-| `make lint` | Run ruff linter (`ruff check src/ tests/`) |
-| `make format` | Run ruff formatter (`ruff format src/ tests/`) |
-| `make typecheck` | Run pyright (`pyright --strict src/`) |
-| `make test` | Run pytest with coverage (`pytest --cov=netbox_vsphere_sync`) |
+| `make install` | Install package (`pip install -e .`) |
+| `make install-dev` | Install package + dev dependencies + pre-commit hooks |
+| `make lint` | Run ruff linter + formatter check |
+| `make format` | Run ruff linter fix + formatter |
+| `make typecheck` | Run pyright type checker |
+| `make test` | Run pytest with verbose output |
+| `make test-cov` | Run pytest with coverage (target: >= 80%) |
 | `make test-unit` | Run unit tests only (`pytest -m unit`) |
 | `make test-integration` | Run integration tests only (`pytest -m integration`) |
 | `make check` | Run lint + typecheck + test (the full gate) |
 | `make build` | Build distribution packages (`python -m build`) |
-| `make clean` | Remove build artifacts (`rm -rf dist/ build/ .pytest_cache/`) |
-| `make run` | Run the sync CLI (`netbox-vsphere-sync sync --dry-run`) |
+| `make clean` | Remove build artifacts |
+| `make run` | Run the sync CLI (`python -m netbox_vsphere_sync`) |
 | `make pre-commit` | Install pre-commit hooks (`pre-commit install`) |
+| `make docker-build` | Build production Docker image (`docker build -t nvs-sync:latest .`) |
+| `make docker-run` | Run Docker container with config volume mount |
+
+> **Note:** `make test-unit`, `make test-integration`, `make build`, `make pre-commit`,
+> `make docker-build`, and `make docker-run` are planned targets (see Epic 4-5 in project-plan.md).
+
+---
+
+## 11. Docker Standards
+
+> **Status: PLANNED** — These standards will be enforced once the
+> corresponding infrastructure is implemented (see Epic 4 in project-plan.md).
+
+### 11.1 Image Requirements
+
+| Requirement | Detail |
+|---|---|
+| Base image | `python:3.11-slim` (Debian-based, minimal) |
+| Multi-stage build | Required — separate `deps` and `runtime` stages |
+| Non-root user | Required — create `nvs` user with UID 1000 |
+| No dev dependencies | Production image excludes `[dev]` extras |
+| Entry point | `ENTRYPOINT ["nvs-sync"]` for CLI usage |
+| Image size | Target < 200MB |
+
+### 11.2 Dockerfile Structure
+
+```dockerfile
+# Stage 1: Install dependencies only (layer cache)
+FROM python:3.11-slim AS deps
+WORKDIR /app
+COPY pyproject.toml .
+RUN pip install --no-cache-dir .
+
+# Stage 2: Production runtime
+FROM python:3.11-slim AS runtime
+RUN addgroup --gid 1000 nvs && adduser --uid 1000 --gid 1000 --disabled-password --gecos "" nvs
+WORKDIR /app
+COPY --from=deps /usr/local/lib/python3.11/site-packages /usr/local/lib/python3.11/site-packages
+COPY --from=deps /usr/local/bin/nvs-sync /usr/local/bin/nvs-sync
+COPY src/ src/
+USER nvs
+ENTRYPOINT ["nvs-sync"]
+```
+
+### 11.3 `.dockerignore` Requirements
+
+Must exclude:
+- `.git/` — version control
+- `tests/` — test code not needed in production
+- `docs/` — documentation not needed in runtime
+- `__pycache__/`, `*.pyc` — compiled Python
+- `.ruff_cache/`, `.pytest_cache/` — tool caches
+- `*.egg-info/`, `dist/`, `build/` — build artifacts
+- `.vscode/`, `.idea/` — IDE configuration
+
+### 11.4 `docker-compose.yml` Conventions
+
+- Service name: `nvs-sync`
+- Config volume: `./config:/etc/netbox-vsphere-sync:ro`
+- Environment variables for credentials (never hardcoded)
+- Resource limits for production deployments
+
+### 11.5 Image Tagging
+
+| Tag | Purpose |
+|---|---|
+| `nvs-sync:latest` | Latest development build |
+| `nvs-sync:<version>` | Released version (e.g., `nvs-sync:0.1.0`) |
+| `nvs-sync:<commit-sha>` | CI build for specific commit |
+
+### 11.6 Security
+
+- Never run as root
+- No secrets in `ENV` — use runtime environment or Docker secrets
+- Scan images with `docker scout` or Trivy before production use
+- Pin base image versions in CI for reproducibility
+
+---
+
+## 12. CI/CD Standards
+
+> **Status: PLANNED** — These standards will be enforced once the
+> corresponding infrastructure is implemented (see Epic 5 in project-plan.md).
+
+### 12.1 Pipeline Structure
+
+```
+.github/workflows/
+├── ci.yml       # Triggered on push to main + PRs
+└── release.yml  # Triggered on tag push (v*)
+```
+
+### 12.2 CI Workflow Jobs
+
+| Job | Command | Purpose |
+|---|---|---|
+| **lint** | `ruff check src/ tests/` + `ruff format --check src/ tests/` | Code style enforcement |
+| **typecheck** | `pyright src/ tests/` | Static type safety |
+| **test** | `pytest --cov=netbox_vsphere_sync --cov-report=xml` | Unit + integration tests |
+| **build** | `python -m build` | Verify package builds correctly |
+| **docker** | `docker build -t nvs-sync:ci .` | Verify Docker image builds |
+
+### 12.3 Test Matrix
+
+| Python Version | Run On |
+|---|---|
+| 3.11 | CI (primary) |
+| 3.12 | CI |
+| 3.13 | CI |
+
+### 12.4 Trigger Rules
+
+| Event | Branch | Action |
+|---|---|---|
+| Push | `main` | Run full CI pipeline |
+| Pull Request | `main` | Run full CI pipeline |
+| Tag | `v*` | Run release pipeline |
+
+### 12.5 Branch Protection
+
+- Require CI pass before merge
+- Require PR review (minimum 1 reviewer)
+- Require linear history (rebase before merge)
+- Squash merge only
+
+### 12.6 Release Pipeline
+
+Triggered on tag push (`v*`):
+1. Build Python package (`python -m build`)
+2. Publish to PyPI (`twine upload`)
+3. Build Docker image
+4. Push to container registry
+5. Create GitHub Release with artifacts
+
+### 12.7 Secrets Management
+
+| Secret | Purpose |
+|---|---|
+| `PYPI_TOKEN` | PyPI package publishing |
+| `DOCKERHUB_TOKEN` | Docker Hub image pushing |
+| `NETBOX_URL` | Integration test environment |
+| `NETBOX_TOKEN` | Integration test environment |
+
+---
+
+## 13. NetBox Integration Standards
+
+> **Status: PARTIALLY IMPLEMENTED** — Some practices are already in place
+> (dependency order, natural keys, PATCH for updates). Others require
+> configuration changes (brief mode, exclude_config_context, retry logic).
+
+### 13.1 Authentication
+
+| Requirement | Detail |
+|---|---|
+| Token version | v2 tokens (`nbt_<key>.<token>`) on NetBox 4.5+ |
+| v1 migration | Complete before NetBox 4.7 (deprecation planned) |
+| Token scope | Minimal permissions per endpoint (see §7.5) |
+| Token storage | Environment variables or Vault — never in config files |
+
+### 13.2 REST API Best Practices
+
+| Practice | Implementation |
+|---|---|
+| Always paginate | `?limit=100` (max 1000) — pynetbox handles this |
+| Use brief mode | `?brief=True` for list operations (reduces payload) |
+| Exclude config_context | `?exclude=config_context` for device/cluster lists |
+| Use PATCH for updates | Never PUT for partial updates |
+| Field selection | `?fields=` to request only needed fields |
+| Avoid `?q=` at scale | Use specific filters (`name=`, `site=`, etc.) |
+| Configurable timeout | Default 120s for large inventories |
+| Retry on transient errors | Exponential backoff, max 3 retries |
+
+### 13.3 pynetbox Configuration
+
+```python
+import pynetbox
+
+api = pynetbox.api(
+    url=config.url,
+    token=config.token,
+    threading=True,  # Enable concurrent requests
+)
+api.http_session.verify = config.verify_ssl
+api.http_session.timeout = config.request_timeout  # Default: 120s
+```
+
+### 13.4 Data Ingestion Patterns
+
+| Pattern | Detail |
+|---|---|
+| Dependency order | Create objects in topological order: site → cluster → device → interface → IP |
+| Natural keys | Use `name`, `vid+site`, `address` for upsert matching |
+| Custom fields | Use `nvs_` prefix for all tool-managed custom fields |
+| Idempotent operations | Each sync run produces the same result regardless of starting state |
+
+### 13.5 Custom Field Conventions
+
+| Convention | Example |
+|---|---|
+| Prefix | `nvs_` (NetBox vSphere Sync) |
+| Naming | `nvs_<entity>_<attribute>` |
+| Types | `text` for strings, `integer` for numbers, `boolean` for flags |
+| Content types | Explicitly list all applicable content types |
+
+### 13.6 Error Handling
+
+- Wrap all pynetbox exceptions in domain exceptions
+- Log API errors with context (endpoint, parameters, response)
+- Never expose credentials in error messages
+- Retry transient errors (connection, timeout) before failing
+
+### 13.7 Performance Guidelines
+
+| Guideline | Target |
+|---|---|
+| List operations | Use `brief=True` and `exclude=config_context` |
+| Pagination | 100 items per page (pynetbox default) |
+| Concurrent requests | Enable threading in pynetbox |
+| Request timeout | 120s (configurable) |
+| Sync duration | < 5 minutes for 500 ESXi hosts |
 
 ---
 

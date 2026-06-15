@@ -1267,16 +1267,29 @@ class ConfigurationError(SyncError): ...
 
 ## 12. Revised Project Structure
 
+> **Note:** This reflects the actual codebase as of the initial implementation.
+> Aspirational files (e.g., `check.py`, `config.py` CLI commands) are not shown.
+
 ```
 netbox-vsphere-sync/
 ├── pyproject.toml
 ├── Makefile
 ├── README.md
-├── LICENSE
 ├── .gitignore
 ├── ruff.toml
 ├── pyrightconfig.json
 ├── .pre-commit-config.yaml
+├── Dockerfile                  # PLANNED
+├── .dockerignore               # PLANNED
+├── docker-compose.yml          # PLANNED
+│
+├── docs/
+│   ├── vision.md
+│   ├── domains.md
+│   ├── architecture.md
+│   ├── SRS.md
+│   ├── standards.md
+│   └── project-plan.md
 │
 ├── src/
 │   └── netbox_vsphere_sync/
@@ -1285,28 +1298,18 @@ netbox-vsphere-sync/
 │       │   ├── __init__.py
 │       │   ├── model/
 │       │   │   ├── __init__.py
-│       │   │   ├── natural_key.py
-│       │   │   ├── site.py
-│       │   │   ├── cluster.py
-│       │   │   ├── host.py
-│       │   │   ├── network.py
-│       │   │   ├── inventory.py
 │       │   │   ├── vsphere/
-│       │   │   │   ├── __init__.py
-│       │   │   │   ├── datacenter.py
-│       │   │   │   ├── cluster.py
-│       │   │   │   ├── host.py
-│       │   │   │   ├── portgroup.py
-│       │   │   │   ├── vmknic.py
-│       │   │   │   ├── datastore.py
-│       │   │   │   └── hardware.py
+│       │   │   │   └── __init__.py
 │       │   │   └── config/
 │       │   │       ├── __init__.py
-│       │   │       ├── vsphere.py
+│       │   │       ├── app.py
+│       │   │       ├── bootstrap.py
+│       │   │       ├── inventory.py
 │       │   │       ├── netbox.py
-│       │   │       ├── vault.py
+│       │   │       ├── network.py
 │       │   │       ├── sync.py
-│       │   │       └── vlan.py
+│       │   │       ├── vcenter.py
+│       │   │       └── vault.py
 │       │   ├── events.py
 │       │   ├── ports.py
 │       │   ├── exceptions.py
@@ -1322,31 +1325,34 @@ netbox-vsphere-sync/
 │       │
 │       ├── infrastructure/
 │       │   ├── __init__.py
+│       │   ├── config/
+│       │   │   ├── __init__.py
+│       │   │   ├── loader.py
+│       │   │   ├── lock_manager.py
+│       │   │   └── secret_resolver.py
 │       │   ├── netbox/
 │       │   │   ├── __init__.py
 │       │   │   ├── acl.py
 │       │   │   ├── client.py
 │       │   │   └── repositories/
 │       │   │       ├── __init__.py
-│       │   │       ├── site.py
-│       │   │       ├── cluster.py
-│       │   │       ├── device.py
-│       │   │       ├── vlan.py
-│       │   │       ├── interface.py
-│       │   │       ├── ip_address.py
-│       │   │       └── inventory_item.py
+│       │   │       ├── bootstrap_repository.py
+│       │   │       ├── cluster_repository.py
+│       │   │       ├── device_repository.py
+│       │   │       ├── interface_repository.py
+│       │   │       ├── inventory_item_repository.py
+│       │   │       ├── ip_address_repository.py
+│       │   │       ├── site_repository.py
+│       │   │       └── vlan_repository.py
 │       │   ├── vsphere/
 │       │   │   ├── __init__.py
 │       │   │   ├── acl.py
+│       │   │   ├── client.py
 │       │   │   └── collector.py
-│       │   ├── vault/
-│       │   │   ├── __init__.py
-│       │   │   ├── acl.py
-│       │   │   └── client.py
-│       │   └── config/
+│       │   └── vault/
 │       │       ├── __init__.py
-│       │       ├── loader.py
-│       │       └── secret_resolver.py
+│       │       ├── acl.py
+│       │       └── client.py
 │       │
 │       ├── cli/
 │       │   ├── __init__.py
@@ -1354,10 +1360,7 @@ netbox-vsphere-sync/
 │       │   ├── app.py
 │       │   └── commands/
 │       │       ├── __init__.py
-│       │       ├── sync.py
-│       │       ├── check.py
-│       │       ├── bootstrap.py
-│       │       └── config.py
+│       │       └── sync.py          # Only implemented command
 │       │
 │       └── report/
 │           ├── __init__.py
@@ -1369,31 +1372,22 @@ netbox-vsphere-sync/
     ├── conftest.py
     ├── domain/
     │   ├── __init__.py
-    │   ├── test_events.py
-    │   ├── test_natural_key.py
     │   └── model/
     │       ├── __init__.py
-    │       ├── test_site.py
-    │       ├── test_cluster.py
-    │       ├── test_host.py
-    │       ├── test_network.py
-    │       └── test_inventory.py
+    │       └── test_vsphere_entities.py
     ├── application/
     │   ├── __init__.py
-    │   ├── test_sync_engine.py
+    │   ├── test_dependency_resolver.py
     │   ├── test_diff_engine.py
-    │   └── test_dependency_resolver.py
+    │   └── test_event_log.py
     ├── infrastructure/
     │   ├── __init__.py
     │   ├── netbox/
-    │   │   ├── __init__.py
-    │   │   └── test_repositories.py
+    │   │   └── __init__.py
     │   └── vsphere/
-    │       ├── __init__.py
-    │       └── test_collector.py
+    │       └── __init__.py
     └── cli/
-        ├── __init__.py
-        └── test_commands.py
+        └── __init__.py
 ```
 
 ---

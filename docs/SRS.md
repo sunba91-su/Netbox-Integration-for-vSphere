@@ -752,7 +752,7 @@ Device ────────┤   (depends on Site + Cluster)
 
 | ID | Criterion |
 |---|---|
-| AC-001 | `netbox-vsphere-sync sync` completes without error against test vCenter |
+| AC-001 | `nvs-sync sync` completes without error against test vCenter |
 | AC-002 | All 8 entity types synced correctly (manual verification) |
 | AC-003 | Re-running sync produces 0 creates, 0 updates (idempotent) |
 | AC-004 | `--dry-run` shows changes without modifying NetBox |
