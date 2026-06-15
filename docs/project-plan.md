@@ -10,7 +10,7 @@
 
 ---
 
-### Task 1.1 — Add package version and public API exports
+### Task 1.1 — Add package version and public API exports ✅
 
 **Description:**
 Add `__version__ = "0.1.0"` and `__all__` to the root package `__init__.py`. This becomes the single source of truth for the package version, referenced dynamically by `pyproject.toml`.
@@ -20,9 +20,9 @@ Add `__version__ = "0.1.0"` and `__all__` to the root package `__init__.py`. Thi
 **Estimated Complexity:** Low
 
 **Definition of Done:**
-- [ ] `src/netbox_vsphere_sync/__init__.py` contains `__version__ = "0.1.0"` and `__all__ = ["__version__"]`
-- [ ] `pyproject.toml` uses `dynamic = ["version"]` with `[tool.setuptools.dynamic] version = {attr = "netbox_vsphere_sync.__version__"}`
-- [ ] `python -c "import netbox_vsphere_sync; print(netbox_vsphere_sync.__version__)"` prints `0.1.0`
+- [x] `src/netbox_vsphere_sync/__init__.py` contains `__version__ = "0.1.0"` and `__all__ = ["__version__"]`
+- [x] `pyproject.toml` uses `dynamic = ["version"]` with `[tool.setuptools.dynamic] version = {attr = "netbox_vsphere_sync.__version__"}`
+- [x] `python -c "import netbox_vsphere_sync; print(netbox_vsphere_sync.__version__)"` prints `0.1.0`
 
 ---
 
