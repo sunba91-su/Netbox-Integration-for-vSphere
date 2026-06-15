@@ -1,0 +1,24 @@
+{
+    "strict": [
+        "src/netbox_vsphere_sync/domain/**/*.py",
+        "src/netbox_vsphere_sync/application/**/*.py",
+        "src/netbox_vsphere_sync/cli/**/*.py",
+        "src/netbox_vsphere_sync/report/**/*.py"
+    ],
+    "reportMissingTypeStubs": false,
+    "reportCallIssue": false,
+    "reportAttributeAccessIssue": false,
+    "reportOptionalMemberAccess": false,
+    "reportAssignmentType": false,
+    "reportUnknownMemberType": false,
+    "reportUnknownVariableType": false,
+    "reportUnknownParameterType": false,
+    "reportMissingParameterType": false,
+    "typeCheckingMode": "basic",
+    "include": [
+        "src"
+    ],
+    "exclude": [
+        "**/__pycache__"
+    ]
+}
