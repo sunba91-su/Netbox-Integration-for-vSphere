@@ -49,6 +49,7 @@ markers = [
     "unit: Unit tests (no external dependencies)",
     "integration: Integration tests (require mock servers or vcrpy)",
     "slow: Tests that take >1s to run",
+    "vcr: Tests using recorded HTTP cassettes",
 ]
 addopts = "-v --tb=short"
 
