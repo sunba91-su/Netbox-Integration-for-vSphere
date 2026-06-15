@@ -32,32 +32,70 @@ and network topology.
 
 ```
 netbox-vsphere-sync/
-├── pyproject.toml              # Dependencies, metadata, entry points
-├── Makefile                    # install, lint, typecheck, test, run
+├── pyproject.toml              # Dependencies, metadata, entry points (PEP 621)
+├── Makefile                    # Common command recipes
 ├── README.md                   # Quickstart and usage
-├── LICENSE                     # Apache 2.0 or MIT
+├── LICENSE                     # Apache 2.0
 ├── .gitignore
-├── ruff.toml                   # Linter configuration
-├── pyrightconfig.json          # Type-checker configuration
+├── ruff.toml                   # Linter + formatter configuration
+├── pyrightconfig.json          # Strict type-checker configuration
 ├── .pre-commit-config.yaml     # Pre-commit hooks
 ├── .github/workflows/          # CI pipeline (GitHub Actions)
 │
 ├── docs/                       # System documentation
 │   ├── vision.md               # Architecture vision and strategy
-│   └── domains.md              # DDD domain model and bounded contexts
+│   ├── domains.md              # DDD domain model and bounded contexts
+│   ├── architecture.md         # System context, components, deployment
+│   ├── SRS.md                  # Software requirements specification
+│   └── standards.md            # Coding, git, testing, security standards
 │
 ├── src/
 │   └── netbox_vsphere_sync/    # Main package
+│       ├── __init__.py
 │       ├── domain/             # Core domain: entities, VOs, events, ports
+│       │   ├── model/          # Entities, value objects
+│       │   │   ├── vsphere/    # vSphere-side domain objects
+│       │   │   └── config/     # Pydantic config models
+│       │   ├── events.py       # Domain event hierarchy
+│       │   ├── ports.py        # Repository protocols (typing.Protocol)
+│       │   ├── exceptions.py   # Domain exception hierarchy
+│       │   └── constants.py    # Constants (dependency order, defaults)
 │       ├── application/        # Use cases: sync engine, diff engine
+│       │   ├── sync_engine.py
+│       │   ├── diff_engine.py
+│       │   ├── dependency_resolver.py
+│       │   ├── bootstrapper.py
+│       │   └── event_log.py
 │       ├── infrastructure/     # Adapters: NetBox ACL, vSphere ACL, Vault
+│       │   ├── netbox/
+│       │   │   ├── acl.py
+│       │   │   ├── client.py
+│       │   │   └── repositories/
+│       │   ├── vsphere/
+│       │   │   ├── acl.py
+│       │   │   └── collector.py
+│       │   ├── vault/
+│       │   │   ├── acl.py
+│       │   │   └── client.py
+│       │   └── config/
+│       │       ├── loader.py
+│       │       └── secret_resolver.py
 │       ├── cli/                # Click commands
+│       │   ├── __main__.py
+│       │   ├── app.py
+│       │   └── commands/
 │       └── report/             # Observability: reports, logging
+│           ├── generator.py
+│           └── console.py
 │
 └── tests/                      # Mirrors src/ structure
+    ├── conftest.py
     ├── domain/
+    │   └── model/
     ├── application/
     ├── infrastructure/
+    │   ├── netbox/
+    │   └── vsphere/
     └── cli/
 ```
 
@@ -148,8 +186,11 @@ main ─────●─────────●─────────
 
 | Document | Purpose |
 |---|---|
-| `docs/vision.md` | Full project architecture, data model, strategy |
+| `docs/vision.md` | Architecture vision, data model, strategic decisions |
 | `docs/domains.md` | DDD bounded contexts, aggregates, events, ports |
+| `docs/architecture.md` | System context, components, API, security, deployment |
+| `docs/SRS.md` | Functional and non-functional requirements, acceptance criteria |
+| `docs/standards.md` | Coding, git, testing, security standards |
 
 ---
 
@@ -157,9 +198,12 @@ main ─────●─────────●─────────
 
 1. Read `docs/vision.md` first to understand the full architecture.
 2. Read `docs/domains.md` to understand the domain model and bounded contexts.
-3. Follow the project structure — code goes in the correct layer (domain,
+3. Read `docs/architecture.md` for component, API, and deployment design.
+4. Read `docs/SRS.md` for functional and non-functional requirements.
+5. Read `docs/standards.md` for coding, git, and testing standards.
+6. Follow the project structure — code goes in the correct layer (domain,
    application, infrastructure, cli, report).
-4. Use Conventional Commits for every commit.
-5. Create a feature branch (`feat/xxx`) before making changes.
-6. Run `make check` before committing (lint + typecheck + test).
-7. Keep PRs small and focused on a single concern.
+7. Use Conventional Commits for every commit.
+8. Create a feature branch (`feat/xxx`) before making changes.
+9. Run `make check` before committing (lint + typecheck + test).
+10. Keep PRs small and focused on a single concern.

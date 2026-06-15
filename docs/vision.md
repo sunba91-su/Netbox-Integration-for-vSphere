@@ -34,8 +34,8 @@ VLAN inventories, track hardware lifecycles, and reconcile storage capacity —
 work that is error-prone, stale by the time it is recorded, and does not scale
 beyond a handful of clusters.
 
-**Solution.** A Python CLI package (`netbox-vsphere-sync`) that connects to one
-or more vCenter Server instances, reads the full inventory (datacentres,
+**Solution.** A Python CLI package (`netbox-vsphere-sync`) that connects to a
+single vCenter Server instance per run, reads the full inventory (datacentres,
 clusters, hosts, networks, interfaces, hardware, datastores), and reconciles it
 against a NetBox 4.5+ instance using the REST API (via `pynetbox`). The sync
 is **one-way** (vSphere → NetBox), **idempotent**, and designed to run on a
@@ -845,56 +845,80 @@ This supports dev environments, Vault Agent sidecars, and CI secrets injection.
 
 ```
 netbox-vsphere-sync/
-├── pyproject.toml
-├── Makefile
-├── README.md
-├── LICENSE
+├── pyproject.toml              # Dependencies, metadata, entry points (PEP 621)
+├── Makefile                    # Common command recipes
+├── README.md                   # Quickstart and usage
+├── LICENSE                     # Apache 2.0
 ├── .gitignore
-├── ruff.toml
-├── pyrightconfig.json
-├── .pre-commit-config.yaml
+├── ruff.toml                   # Linter + formatter configuration
+├── pyrightconfig.json          # Strict type-checker configuration
+├── .pre-commit-config.yaml     # Pre-commit hooks
+├── .github/workflows/          # CI pipeline (GitHub Actions)
+├── docs/                       # System documentation
+│   ├── vision.md               # This file — architecture vision
+│   ├── domains.md              # DDD domain model and bounded contexts
+│   ├── architecture.md         # System, component, API, deployment design
+│   ├── SRS.md                  # Software requirements specification
+│   └── standards.md            # Coding, git, testing, security standards
 │
 ├── src/
-│   └── netbox_vsphere_sync/
-│       ├── __init__.py
-│       ├── __main__.py
-│       ├── cli.py
-│       ├── config.py
-│       ├── sync/
-│       │   ├── __init__.py
-│       │   ├── engine.py
-│       │   ├── host.py
-│       │   ├── cluster.py
-│       │   ├── network.py
-│       │   ├── interface.py
-│       │   ├── inventory.py
-│       │   └── storage.py
-│       ├── vsphere/
-│       │   ├── __init__.py
-│       │   └── client.py
-│       ├── netbox/
-│       │   ├── __init__.py
-│       │   └── client.py
-│       ├── vault/
-│       │   ├── __init__.py
-│       │   └── client.py
-│       └── utils/
-│           ├── __init__.py
-│           └── diff.py
+│   └── netbox_vsphere_sync/    # Main package
+│       ├── domain/             # Core domain: entities, VOs, events, ports
+│       │   ├── model/          # Entities, value objects
+│       │   │   ├── vsphere/    # vSphere-side domain objects
+│       │   │   └── config/     # Pydantic config models
+│       │   ├── events.py
+│       │   ├── ports.py        # Repository protocols (typing.Protocol)
+│       │   ├── exceptions.py   # Domain exception hierarchy
+│       │   └── constants.py
+│       ├── application/        # Use cases: sync engine, diff engine
+│       │   ├── sync_engine.py
+│       │   ├── diff_engine.py
+│       │   ├── dependency_resolver.py
+│       │   ├── bootstrapper.py
+│       │   └── event_log.py
+│       ├── infrastructure/     # Adapters: NetBox ACL, vSphere ACL, Vault, config
+│       │   ├── netbox/
+│       │   │   ├── acl.py
+│       │   │   ├── client.py
+│       │   │   └── repositories/
+│       │   ├── vsphere/
+│       │   │   ├── acl.py
+│       │   │   └── collector.py
+│       │   ├── vault/
+│       │   │   ├── acl.py
+│       │   │   └── client.py
+│       │   └── config/
+│       │       ├── loader.py
+│       │       └── secret_resolver.py
+│       ├── cli/                # Click commands
+│       │   ├── __main__.py
+│       │   ├── app.py
+│       │   └── commands/
+│       └── report/             # Observability: reports, logging
+│           ├── generator.py
+│           └── console.py
 │
-└── tests/
-    ├── __init__.py
+└── tests/                      # Mirrors src/ structure
     ├── conftest.py
-    ├── test_cli.py
-    ├── test_config.py
-    └── sync/
-        ├── __init__.py
-        ├── test_host.py
-        ├── test_cluster.py
-        ├── test_network.py
-        ├── test_interface.py
-        ├── test_inventory.py
-        └── test_storage.py
+    ├── domain/
+    │   └── model/
+    │       ├── test_site.py
+    │       ├── test_cluster.py
+    │       ├── test_host.py
+    │       ├── test_network.py
+    │       └── test_inventory.py
+    ├── application/
+    │   ├── test_sync_engine.py
+    │   ├── test_diff_engine.py
+    │   └── test_dependency_resolver.py
+    ├── infrastructure/
+    │   ├── netbox/
+    │   │   └── test_repositories.py
+    │   └── vsphere/
+    │       └── test_collector.py
+    └── cli/
+        └── test_commands.py
 ```
 
 ### 8.3 CLI Interface
@@ -996,7 +1020,15 @@ Achieved through:
 
 ## 10. Implementation Roadmap
 
-### Phase 1 — Project Scaffolding (day 1)
+### Phase 1 — Project Design ✅ COMPLETE
+
+- Design documents completed: vision, domains, architecture, SRS, standards.
+- Project standards defined: coding, git, testing, security.
+- Directory structure established per DDD layered architecture.
+
+**Related docs:** `docs/vision.md`, `docs/domains.md`, `docs/architecture.md`, `docs/SRS.md`, `docs/standards.md`
+
+### Phase 2 — Project Scaffolding ⬜ PLANNED
 
 - Initialize `pyproject.toml` with runtime + dev dependencies.
 - Create `Makefile` with `install`, `lint`, `typecheck`, `test`, `clean`.
@@ -1005,36 +1037,43 @@ Achieved through:
 
 **Deliverable:** `pip install -e .` succeeds, `ruff .` passes, `pyright` passes.
 
-### Phase 2 — Core Infrastructure (days 2–3)
+**Related docs:** `docs/standards.md` §8, §10
 
-- `config.py` — Pydantic model, YAML file support, env var overrides.
-- `vault/client.py` — VaultClient wrapper with AppRole / K8s / Token auth.
-- `netbox/client.py` — authenticated pynetbox wrapper with retry.
-- `vsphere/client.py` — PyVmomi SmartConnect wrapper.
-- `cli.py` — Click group with `sync`, `check`, `bootstrap`, `config` commands.
-- `sync/engine.py` — orchestrator that runs modules in dependency order.
-- `utils/diff.py` — generic create/update/delete diff computation.
+### Phase 3 — Core Infrastructure ⬜ PLANNED
+
+- `infrastructure/config/loader.py` — Pydantic model, YAML file support, env var overrides.
+- `infrastructure/vault/client.py` — VaultClient wrapper with AppRole / K8s / Token auth.
+- `infrastructure/netbox/client.py` — authenticated pynetbox wrapper with retry.
+- `infrastructure/vsphere/acl.py` — PyVmomi SmartConnect wrapper + ACL.
+- `cli/app.py` + commands — Click group with `sync`, `check`, `bootstrap`, `config`.
+- `application/sync_engine.py` — orchestrator that runs modules in dependency order.
+- `application/diff_engine.py` — generic create/update/delete diff computation.
 
 **Deliverable:** `netbox-vsphere-sync check` displays connectivity for all
 three backends.
 
-### Phase 3 — Entity Sync Modules (days 4–8)
+**Related docs:** `docs/architecture.md` §2, `docs/domains.md` §5
+
+### Phase 4 — Entity Sync Modules ⬜ PLANNED
 
 One module per day in dependency order:
 
-1. `sync/host.py` — ESXi host → Device + DeviceType + Manufacturer.
-2. `sync/cluster.py` — vSphere Cluster → NetBox Cluster.
-3. `sync/network.py` — Port Group → VLAN.
-4. `sync/interface.py` — VMkernel → Interface + IPAddress.
-5. `sync/inventory.py` — hardware → InventoryItem.
-6. `sync/storage.py` — datastore → per-host InventoryItem (Storage).
+1. `infrastructure/vsphere/collector.py` + sync — Site (vSphere Datacenter → NetBox Site).
+2. `infrastructure/netbox/repositories/cluster.py` + sync — Cluster.
+3. `infrastructure/netbox/repositories/device.py` + sync — Device (ESXi Host).
+4. Sync — VLAN (Port Group).
+5. Sync — Interface + IPAddress (VMkernel).
+6. Sync — InventoryItem (hardware).
+7. Sync — InventoryItem (datastore storage).
 
 Each module includes unit tests with mocked vSphere and NetBox responses.
 
 **Deliverable:** `netbox-vsphere-sync sync --dry-run` produces a complete
 change report against a live vCenter.
 
-### Phase 4 — Testing & Quality (days 9–10)
+**Related docs:** `docs/vision.md` §4, `docs/architecture.md` §3, `docs/domains.md` §3–4
+
+### Phase 5 — Testing & Quality ⬜ PLANNED
 
 - Unit tests for every module (>=80 % line coverage).
 - Integration test fixtures using vcrpy for recorded NetBox interactions.
@@ -1043,13 +1082,15 @@ change report against a live vCenter.
 
 **Deliverable:** `make test` passes. `make lint typecheck` passes.
 
-### Phase 5 — Packaging & Documentation (day 11)
+**Related docs:** `docs/standards.md` §6, `docs/architecture.md` §6
+
+### Phase 6 — Packaging & Documentation ⬜ PLANNED
 
 - PyPI-ready `pyproject.toml` (description, classifiers, project URLs).
 - Full `README.md` with install, config, usage, and cron example.
 - Configuration file reference.
 - Example systemd unit and timer for cron scheduling.
-- LICENSE (Apache 2.0 or MIT).
+- LICENSE (Apache 2.0).
 
 **Deliverable:** `pip install netbox-vsphere-sync` works. README covers every
 flag.
@@ -1124,3 +1165,16 @@ The following are explicitly **not** part of the initial vision.
 > NetBox, this project eliminates manual CMDB data entry, reduces drift, and
 > gives infrastructure teams a reliable, queryable picture of their virtual
 > estate — with zero risk to the production hypervisor.*
+
+---
+
+## 13. Document Map
+
+| Document | Path | Purpose |
+|---|---|---|
+| **Vision** | `docs/vision.md` | This file — architecture vision, data model, strategic decisions |
+| **Domain Model** | `docs/domains.md` | DDD bounded contexts, aggregates, entities, value objects, events, ports |
+| **Architecture** | `docs/architecture.md` | System context, components, security, deployment design |
+| **SRS** | `docs/SRS.md` | Functional and non-functional requirements, acceptance criteria |
+| **Standards** | `docs/standards.md` | Coding, git, testing, security standards |
+| **Agent Workflow** | `AGENTS.md` | Agent workflow, tech stack, build commands, commit policy |
