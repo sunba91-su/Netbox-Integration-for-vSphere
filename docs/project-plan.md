@@ -268,7 +268,7 @@ Set up the integration test infrastructure using vcrpy for recording and replayi
 
 ---
 
-### Task 4.1 — Create `.dockerignore`
+### Task 4.1 — Create `.dockerignore` ✅
 
 **Description:**
 Create `.dockerignore` to exclude unnecessary files from the Docker build context: `.git`, `tests/`, `docs/`, `__pycache__`, `.ruff_cache`, `.pytest_cache`, `*.egg-info`, `.vscode`, `.idea`.
@@ -278,12 +278,12 @@ Create `.dockerignore` to exclude unnecessary files from the Docker build contex
 **Estimated Complexity:** Low
 
 **Definition of Done:**
-- [ ] `.dockerignore` exists with comprehensive exclusion list
-- [ ] `docker build .` context size is minimal (verify with `docker build --no-cache .`)
+- [x] `.dockerignore` exists with comprehensive exclusion list
+- [x] `docker build .` context size is minimal (verify with `docker build --no-cache .`)
 
 ---
 
-### Task 4.2 — Create multi-stage `Dockerfile`
+### Task 4.2 — Create multi-stage `Dockerfile` ✅
 
 **Description:**
 Create a multi-stage Dockerfile:
@@ -297,16 +297,16 @@ Security: non-root user, minimal base, no dev dependencies, no build tools in fi
 **Estimated Complexity:** Medium
 
 **Definition of Done:**
-- [ ] `Dockerfile` exists with multi-stage build
-- [ ] `docker build -t nvs-sync:latest .` succeeds
-- [ ] `docker run --rm nvs-sync:latest --help` shows CLI help
-- [ ] Container runs as non-root user (`nvs`, UID 1000)
-- [ ] Image size is < 200MB (verify with `docker images nvs-sync`)
-- [ ] No dev dependencies in final image
+- [x] `Dockerfile` exists with multi-stage build
+- [x] `docker build -t nvs-sync:latest .` succeeds
+- [x] `docker run --rm nvs-sync:latest --help` shows CLI help
+- [x] Container runs as non-root user (`nvs`, UID 1000)
+- [x] Image size is < 200MB (verify with `docker images nvs-sync`)
+- [x] No dev dependencies in final image
 
 ---
 
-### Task 4.3 — Create `docker-compose.yml`
+### Task 4.3 — Create `docker-compose.yml` ✅
 
 **Description:**
 Create `docker-compose.yml` with an `nvs-sync` service that mounts config directory and accepts environment variables for credentials.
@@ -316,14 +316,14 @@ Create `docker-compose.yml` with an `nvs-sync` service that mounts config direct
 **Estimated Complexity:** Low
 
 **Definition of Done:**
-- [ ] `docker-compose.yml` defines `nvs-sync` service
-- [ ] Config directory mounted at `/etc/netbox-vsphere-sync`
-- [ ] Environment variables: `NVS_VCENTER_USERNAME`, `NVS_VCENTER_PASSWORD`, `NVS_NETBOX_TOKEN`
-- [ ] `docker compose config` validates successfully
+- [x] `docker-compose.yml` defines `nvs-sync` service
+- [x] Config directory mounted at `/etc/netbox-vsphere-sync`
+- [x] Environment variables: `NVS_VCENTER_USERNAME`, `NVS_VCENTER_PASSWORD`, `NVS_NETBOX_TOKEN`
+- [x] `docker compose config` validates successfully
 
 ---
 
-### Task 4.4 — Add Docker Makefile targets
+### Task 4.4 — Add Docker Makefile targets ✅
 
 **Description:**
 Add `docker-build` and `docker-run` targets to the Makefile.
@@ -333,13 +333,13 @@ Add `docker-build` and `docker-run` targets to the Makefile.
 **Estimated Complexity:** Low
 
 **Definition of Done:**
-- [ ] `make docker-build` builds the Docker image
-- [ ] `make docker-run` runs the container with config volume
-- [ ] `make check` still passes
+- [x] `make docker-build` builds the Docker image
+- [x] `make docker-run` runs the container with config volume
+- [x] `make check` still passes
 
 ---
 
-### Task 4.5 — Add remaining Makefile targets
+### Task 4.5 — Add remaining Makefile targets ✅
 
 **Description:**
 Add `test-unit`, `test-integration`, `build`, and `pre-commit` targets to the Makefile. These are listed in standards.md §10.1 as planned targets.
@@ -349,12 +349,12 @@ Add `test-unit`, `test-integration`, `build`, and `pre-commit` targets to the Ma
 **Estimated Complexity:** Low
 
 **Definition of Done:**
-- [ ] `make test-unit` runs `pytest -m unit`
-- [ ] `make test-integration` runs `pytest -m integration`
-- [ ] `make build` runs `python -m build`
-- [ ] `make pre-commit` runs `pre-commit install`
-- [ ] `.PHONY` list updated with new targets
-- [ ] `make check` still passes
+- [x] `make test-unit` runs `pytest -m unit`
+- [x] `make test-integration` runs `pytest -m integration`
+- [x] `make build` runs `python -m build`
+- [x] `make pre-commit` runs `pre-commit install`
+- [x] `.PHONY` list updated with new targets
+- [x] `make check` still passes
 
 ---
 

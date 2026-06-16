@@ -1,0 +1,13 @@
+services:
+  nvs-sync:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: nvs-sync:latest
+    volumes:
+      - ./config:/etc/netbox-vsphere-sync:ro
+    environment:
+      - NVS_VCENTER_USERNAME=${NVS_VCENTER_USERNAME}
+      - NVS_VCENTER_PASSWORD=${NVS_VCENTER_PASSWORD}
+      - NVS_NETBOX_TOKEN=${NVS_NETBOX_TOKEN}
+    command: ["sync", "--config", "/etc/netbox-vsphere-sync/config.yaml"]

@@ -1,4 +1,4 @@
-.PHONY: install install-dev lint format typecheck test test-cov check run clean
+.PHONY: install install-dev lint format typecheck test test-cov check run clean docker-build docker-run test-unit test-integration build pre-commit
 
 install:
 	pip install -e .
@@ -21,6 +21,12 @@ typecheck:
 test:
 	python -m pytest tests/ -v --tb=short
 
+test-unit:
+	python -m pytest tests/ -v --tb=short -m unit
+
+test-integration:
+	python -m pytest tests/ -v --tb=short -m integration
+
 test-cov:
 	python -m pytest tests/ --cov=netbox_vsphere_sync --cov-report=term-missing --cov-fail-under=80
 
@@ -28,6 +34,18 @@ check: lint typecheck test
 
 run:
 	python -m netbox_vsphere_sync
+
+build:
+	python -m build
+
+pre-commit:
+	pre-commit install
+
+docker-build:
+	docker build -t nvs-sync:latest .
+
+docker-run:
+	docker run --rm nvs-sync:latest --help
 
 clean:
 	rm -rf build/ dist/ *.egg-info .mypy_cache .pytest_cache
