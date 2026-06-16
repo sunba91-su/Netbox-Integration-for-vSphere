@@ -223,7 +223,7 @@ Extend `NetBoxConfig` Pydantic model with new fields: `brief_mode`, `exclude_con
 
 ---
 
-### Task 3.3 — Update repositories to use new client features
+### Task 3.3 — Update repositories to use new client features ✅
 
 **Description:**
 Update all repository implementations in `infrastructure/netbox/repositories/` to pass `brief=True` and `exclude_config_context=True` (where applicable) through the client.
@@ -233,12 +233,12 @@ Update all repository implementations in `infrastructure/netbox/repositories/` t
 **Estimated Complexity:** Medium
 
 **Definition of Done:**
-- [ ] All repositories pass appropriate flags to `client.list_all()`
-- [ ] `device_repository.py` excludes `config_context`
-- [ ] `cluster_repository.py` excludes `config_context`
-- [ ] Brief mode enabled for all list operations
-- [ ] `make test` passes
-- [ ] `make typecheck` passes
+- [x] All repositories pass appropriate flags to `client.list_all()`
+- [x] `device_repository.py` excludes `config_context`
+- [x] `cluster_repository.py` excludes `config_context`
+- [x] Brief mode enabled for all list operations
+- [x] `make test` passes
+- [x] `make typecheck` passes
 
 ---
 

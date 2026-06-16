@@ -14,11 +14,13 @@ class NetBoxInterfaceRepository(InterfaceRepository):
         self._acl = acl
 
     def list_all(self) -> list[Interface]:
-        data_list = self._client.list_all(ENDPOINT)
+        data_list = self._client.list_all(ENDPOINT, brief=True, exclude_config_context=True)
         return [self._acl.to_interface(d) for d in data_list if d.get("name")]
 
     def find_by_natural_key(self, device: str, name: str) -> Interface | None:
-        data = self._client.get_by_field(ENDPOINT, "name", name)
+        data = self._client.get_by_field(
+            ENDPOINT, "name", name, brief=True, exclude_config_context=True
+        )
         if data:
             return self._acl.to_interface(data)
         return None

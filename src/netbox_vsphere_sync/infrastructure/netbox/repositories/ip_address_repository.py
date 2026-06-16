@@ -14,11 +14,13 @@ class NetBoxIpAddressRepository(IpAddressRepository):
         self._acl = acl
 
     def list_all(self) -> list[IpAddress]:
-        data_list = self._client.list_all(ENDPOINT)
+        data_list = self._client.list_all(ENDPOINT, brief=True, exclude_config_context=True)
         return [self._acl.to_ip_address(d) for d in data_list if d.get("address")]
 
     def find_by_natural_key(self, address: str, device: str, interface: str) -> IpAddress | None:
-        data = self._client.get_by_field(ENDPOINT, "address", address)
+        data = self._client.get_by_field(
+            ENDPOINT, "address", address, brief=True, exclude_config_context=True
+        )
         if data:
             return self._acl.to_ip_address(data)
         return None

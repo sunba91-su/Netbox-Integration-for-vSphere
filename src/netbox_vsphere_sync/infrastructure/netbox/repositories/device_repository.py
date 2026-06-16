@@ -14,11 +14,13 @@ class NetBoxDeviceRepository(DeviceRepository):
         self._acl = acl
 
     def list_all(self) -> list[HostSystem]:
-        data_list = self._client.list_all(ENDPOINT)
+        data_list = self._client.list_all(ENDPOINT, brief=True, exclude_config_context=True)
         return [self._acl.to_host(d) for d in data_list if d.get("name")]
 
     def find_by_natural_key(self, site: str, name: str) -> HostSystem | None:
-        data = self._client.get_by_field(ENDPOINT, "name", name)
+        data = self._client.get_by_field(
+            ENDPOINT, "name", name, brief=True, exclude_config_context=True
+        )
         if data:
             return self._acl.to_host(data)
         return None

@@ -97,7 +97,14 @@ class NetBoxClient:
             log.warning("netbox.list_all.failed", endpoint=endpoint, error=str(exc))
             raise NetBoxConnectionError(f"Failed to list {endpoint}: {exc}") from exc
 
-    def get_by_field(self, endpoint: str, field: str, value: object) -> dict | None:
+    def get_by_field(
+        self,
+        endpoint: str,
+        field: str,
+        value: object,
+        brief: bool = True,
+        exclude_config_context: bool = True,
+    ) -> dict | None:
         log.debug("netbox.get_by_field.start", endpoint=endpoint, field=field)
         try:
             app_model = endpoint.split(".")
@@ -105,9 +112,19 @@ class NetBoxClient:
                 return None
             app = getattr(self.api, app_model[0])
             model = getattr(app, app_model[1])
+
+            kwargs: dict[str, Any] = {field: value}
+            if brief:
+                kwargs["brief"] = True
+            if exclude_config_context and endpoint in (
+                "dcim.devices",
+                "virtualization.clusters",
+            ):
+                kwargs["exclude"] = "config_context"
+
             result = self._retry(
                 "get_by_field",
-                lambda: model.get(**{field: value}),
+                lambda: model.get(**kwargs),
             )
             found = dict(result) if result else None
             log.debug(
