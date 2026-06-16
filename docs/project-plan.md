@@ -79,7 +79,7 @@ Add `[tool.pytest.ini_options]` section with markers (`unit`, `integration`, `sl
 
 ---
 
-### Task 1.5 — Add `py.typed` marker and `vcr` pytest marker
+### Task 1.5 — Add `py.typed` marker and `vcr` pytest marker ✅
 
 **Description:**
 Create an empty `py.typed` marker file (PEP 561) so type checkers recognize this package as typed. Also add the missing `vcr` pytest marker to complete the test marker set defined in standards.md §6.6.
@@ -89,15 +89,15 @@ Create an empty `py.typed` marker file (PEP 561) so type checkers recognize this
 **Estimated Complexity:** Low
 
 **Definition of Done:**
-- [ ] File `src/netbox_vsphere_sync/py.typed` exists (empty)
-- [ ] `pyproject.toml` includes `[tool.setuptools.package-data]` to include `py.typed`
-- [ ] `pyproject.toml` pytest markers include `vcr: Tests using recorded HTTP cassettes`
-- [ ] `pytest --markers` shows all 4 markers: `unit`, `integration`, `slow`, `vcr`
-- [ ] `make check` passes
+- [x] File `src/netbox_vsphere_sync/py.typed` exists (empty)
+- [x] `pyproject.toml` includes `[tool.setuptools.package-data]` to include `py.typed`
+- [x] `pyproject.toml` pytest markers include `vcr: Tests using recorded HTTP cassettes`
+- [x] `pytest --markers` shows all 4 markers: `unit`, `integration`, `slow`, `vcr`
+- [x] `make check` passes
 
 ---
 
-### Task 1.6 — Add LICENSE file
+### Task 1.6 — Add LICENSE file ✅
 
 **Description:**
 Create the Apache 2.0 LICENSE file at the repository root. This is referenced in standards.md §1.1 and pyproject.toml but doesn't exist yet.
@@ -107,9 +107,9 @@ Create the Apache 2.0 LICENSE file at the repository root. This is referenced in
 **Estimated Complexity:** Low
 
 **Definition of Done:**
-- [ ] `LICENSE` file exists at repository root
-- [ ] File contains Apache License 2.0 full text
-- [ ] `pyproject.toml` license field matches LICENSE file
+- [x] `LICENSE` file exists at repository root
+- [x] File contains Apache License 2.0 full text
+- [x] `pyproject.toml` license field matches LICENSE file
 
 ---
 
