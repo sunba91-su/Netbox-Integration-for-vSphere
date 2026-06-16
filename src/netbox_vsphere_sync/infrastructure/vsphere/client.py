@@ -1,10 +1,13 @@
 from __future__ import annotations
 
+import structlog
 from pyVim.connect import Disconnect, SmartConnect
 from pyVmomi import vim
 
 from netbox_vsphere_sync.domain.exceptions import VCenterConnectionError
 from netbox_vsphere_sync.domain.model.config import VCenterConfig
+
+log = structlog.get_logger(__name__)
 
 
 class VSphereClient:
@@ -13,6 +16,7 @@ class VSphereClient:
         self._si: vim.ServiceInstance | None = None
 
     def connect(self) -> None:
+        log.info("vsphere.connect.start", host=self._config.host)
         try:
             self._si = SmartConnect(
                 host=self._config.host,
@@ -20,7 +24,9 @@ class VSphereClient:
                 pwd=self._config.password,
                 ssl=not self._config.verify_ssl,
             )
+            log.info("vsphere.connect.complete", host=self._config.host)
         except Exception as exc:
+            log.error("vsphere.connect.failed", host=self._config.host, error=str(exc))
             raise VCenterConnectionError(
                 f"Failed to connect to vCenter at {self._config.host}: {exc}"
             ) from exc
@@ -29,8 +35,9 @@ class VSphereClient:
         if self._si:
             try:
                 Disconnect(self._si)
-            except Exception:
-                pass
+                log.info("vsphere.disconnect.complete")
+            except Exception as exc:
+                log.warning("vsphere.disconnect.error", error=str(exc))
             self._si = None
 
     @property
@@ -60,6 +67,12 @@ class VSphereClient:
     ) -> list[dict]:
         if container is None:
             container = self.root_folder
+
+        log.debug(
+            "vsphere.collect_properties.start",
+            obj_type=obj_type.__name__,
+            properties=properties,
+        )
 
         view_ref = self.service_instance.content.viewManager.CreateContainerView(
             container=container,
@@ -91,9 +104,15 @@ class VSphereClient:
             )
 
             results = collector.RetrieveProperties(specSet=[filter_spec])
-            return [
+            collected = [
                 {prop: self._extract_value(obj, prop) for prop in properties} for obj in results
             ]
+            log.debug(
+                "vsphere.collect_properties.complete",
+                obj_type=obj_type.__name__,
+                count=len(collected),
+            )
+            return collected
         finally:
             view_ref.DestroyView()
 

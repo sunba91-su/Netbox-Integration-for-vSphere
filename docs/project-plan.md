@@ -137,7 +137,7 @@ Create `report/logging_config.py` with a `configure_logging()` function that set
 
 ---
 
-### Task 2.2 — Integrate structlog into core modules
+### Task 2.2 — Integrate structlog into core modules ✅
 
 **Description:**
 Add structured logging to key modules: `sync_engine.py`, `diff_engine.py`, `bootstrapper.py`, `config/loader.py`, `vsphere/client.py`, `netbox/client.py`, `vault/client.py`. Use `structlog.get_logger(__name__)` pattern. Log sync start/end, entity counts, diff summary, and errors with context.
@@ -147,13 +147,13 @@ Add structured logging to key modules: `sync_engine.py`, `diff_engine.py`, `boot
 **Estimated Complexity:** Medium
 
 **Definition of Done:**
-- [ ] All listed modules import and use `structlog.get_logger(__name__)`
-- [ ] `sync_engine.py` logs: sync start (with dry_run/prune flags), entity counts per type, sync completion (with duration and counts)
-- [ ] `netbox/client.py` logs: connection attempt, success/failure
-- [ ] `vsphere/client.py` logs: connection attempt, success/failure
-- [ ] No credentials appear in any log output
-- [ ] `make typecheck` passes
-- [ ] `make lint` passes
+- [x] All listed modules import and use `structlog.get_logger(__name__)`
+- [x] `sync_engine.py` logs: sync start (with dry_run/prune flags), entity counts per type, sync completion (with duration and counts)
+- [x] `netbox/client.py` logs: connection attempt, success/failure
+- [x] `vsphere/client.py` logs: connection attempt, success/failure
+- [x] No credentials appear in any log output
+- [x] `make typecheck` passes
+- [x] `make lint` passes
 
 ---
 

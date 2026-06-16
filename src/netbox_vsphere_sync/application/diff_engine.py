@@ -1,5 +1,7 @@
 from dataclasses import fields
 
+import structlog
+
 from netbox_vsphere_sync.domain.model.vsphere import (
     Cluster,
     Datastore,
@@ -14,6 +16,8 @@ from netbox_vsphere_sync.domain.model.vsphere import (
 DomainEntity = Site | Cluster | HostSystem | Interface | IpAddress | Vlan | Datastore | PortGroup
 
 IGNORED_FIELDS: set[str] = {"custom_fields", "mor", "ip_addresses", "hardware"}
+
+log = structlog.get_logger(__name__)
 
 
 class DiffResult:
@@ -34,6 +38,11 @@ class DiffEngine:
         vsphere_entities: list[DomainEntity],
         netbox_entities: list[DomainEntity],
     ) -> DiffResult:
+        log.debug(
+            "diff.compute.start",
+            vsphere_count=len(vsphere_entities),
+            netbox_count=len(netbox_entities),
+        )
         result = DiffResult()
         nb_by_key = self._index_by_key(netbox_entities)
 
@@ -52,6 +61,13 @@ class DiffEngine:
         for nb_key, nb_entity in nb_by_key.items():
             result.to_prune.append((self.entity_type(nb_entity), nb_key, "offline"))
 
+        log.info(
+            "diff.compute.complete",
+            to_create=len(result.to_create),
+            to_update=len(result.to_update),
+            to_skip=len(result.to_skip),
+            to_prune=len(result.to_prune),
+        )
         return result
 
     def natural_key(self, entity: DomainEntity) -> str:
