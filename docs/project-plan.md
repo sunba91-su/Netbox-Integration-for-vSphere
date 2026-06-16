@@ -242,7 +242,7 @@ Update all repository implementations in `infrastructure/netbox/repositories/` t
 
 ---
 
-### Task 3.4 — Add integration test setup with vcrpy
+### Task 3.4 — Add integration test setup with vcrpy ✅
 
 **Description:**
 Set up the integration test infrastructure using vcrpy for recording and replaying HTTP interactions with NetBox. Create shared fixtures, cassettes directory, and document how to record new cassettes. This enables deterministic integration tests without a live NetBox instance.
@@ -252,13 +252,13 @@ Set up the integration test infrastructure using vcrpy for recording and replayi
 **Estimated Complexity:** Medium
 
 **Definition of Done:**
-- [ ] `tests/integration/` directory created with `conftest.py`
-- [ ] `tests/integration/cassettes/` directory for recorded HTTP interactions
-- [ ] Shared fixtures: `netbox_client`, `vcr_cassette_dir`, `record_mode`
-- [ ] `conftest.py` configures vcrpy with auth header filtering
-- [ ] Documentation in conftest.py on how to record new cassettes
-- [ ] `pytest -m integration` runs without errors (even with empty cassettes)
-- [ ] `make typecheck` passes
+- [x] `tests/integration/` directory created with `conftest.py`
+- [x] `tests/integration/cassettes/` directory for recorded HTTP interactions
+- [x] Shared fixtures: `netbox_client`, `vcr_cassette_dir`, `record_mode`
+- [x] `conftest.py` configures vcrpy with auth header filtering
+- [x] Documentation in conftest.py on how to record new cassettes
+- [x] `pytest -m integration` runs without errors (even with empty cassettes)
+- [x] `make typecheck` passes
 
 ---
 

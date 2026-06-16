@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class NetBoxConfig(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     url: str = ""
     token: str = Field(default="", validation_alias="NVS_NETBOX_TOKEN")
     verify_ssl: bool = True
