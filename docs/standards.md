@@ -811,7 +811,7 @@ repos:
 | `make docker-run` | Run Docker container with config volume mount |
 
 > **Note:** `make test-unit`, `make test-integration`, `make build`, `make pre-commit`,
-> `make docker-build`, and `make docker-run` are planned targets (see Epic 4-5 in project-plan.md).
+> `make docker-build`, and `make docker-run` are now implemented (see project-plan.md).
 
 ---
 

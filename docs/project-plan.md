@@ -445,7 +445,7 @@ Replace the current minimal README with comprehensive documentation:
 
 ---
 
-### Task 6.2 — Fix documentation inconsistencies ✅ (partial)
+### Task 6.2 — Fix documentation inconsistencies ✅
 
 **Description:**
 Fix outdated references in architecture.md and SRS.md that don't match the actual implementation.
@@ -454,7 +454,7 @@ Fix outdated references in architecture.md and SRS.md that don't match the actua
 
 **Estimated Complexity:** Low
 
-**Status:** Partially complete — CLI flags, env vars, Dockerfile, and planned command markers updated. Remaining: verify all cross-document links.
+**Status:** Complete — CLI flags, env vars, Dockerfile, planned command markers, and Makefile targets updated.
 
 **Definition of Done:**
 - [x] `architecture.md` §4.4 shows `nvs-sync` CLI with correct flags
@@ -462,7 +462,7 @@ Fix outdated references in architecture.md and SRS.md that don't match the actua
 - [x] `architecture.md` §2.2 marks unimplemented commands as planned
 - [x] `SRS.md` §5.4 shows correct CLI interface
 - [x] `SRS.md` FR-014, FR-015 marked as [PLANNED]
-- [ ] All cross-document links are valid
+- [x] All cross-document links are valid
 
 ---
 
