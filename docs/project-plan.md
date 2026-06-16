@@ -157,7 +157,7 @@ Add structured logging to key modules: `sync_engine.py`, `diff_engine.py`, `boot
 
 ---
 
-### Task 2.3 — Add `--verbose` and `--log-format` CLI options
+### Task 2.3 — Add `--verbose` and `--log-format` CLI options ✅
 
 **Description:**
 Add `--verbose` flag (sets log level to DEBUG) and `--log-format` option (`console` or `json`) to the CLI. Wire these to `configure_logging()`.
@@ -167,12 +167,12 @@ Add `--verbose` flag (sets log level to DEBUG) and `--log-format` option (`conso
 **Estimated Complexity:** Low
 
 **Definition of Done:**
-- [ ] `nvs-sync sync --help` shows `--verbose` and `--log-format` options
-- [ ] `--verbose` sets log level to DEBUG
-- [ ] `--log-format json` produces JSON output
-- [ ] `--log-format console` (default) produces human-readable output
-- [ ] `NVS_LOG_LEVEL` env var works as fallback
-- [ ] `make test` passes
+- [x] `nvs-sync sync --help` shows `--verbose` and `--log-format` options
+- [x] `--verbose` sets log level to DEBUG
+- [x] `--log-format json` produces JSON output
+- [x] `--log-format console` (default) produces human-readable output
+- [x] `NVS_LOG_LEVEL` env var works as fallback
+- [x] `make test` passes
 
 ---
 

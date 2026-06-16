@@ -41,6 +41,7 @@ from netbox_vsphere_sync.infrastructure.vsphere.acl import VSphereACL
 from netbox_vsphere_sync.infrastructure.vsphere.client import VSphereClient
 from netbox_vsphere_sync.infrastructure.vsphere.collector import VSphereCollector
 from netbox_vsphere_sync.report.console import ConsoleReporter
+from netbox_vsphere_sync.report.logging_config import configure_logging
 
 
 @click.command(name="sync")
@@ -70,6 +71,13 @@ from netbox_vsphere_sync.report.console import ConsoleReporter
 )
 @click.option("--vcenter-insecure", is_flag=True, help="Disable vCenter TLS verification")
 @click.option("--netbox-insecure", is_flag=True, help="Disable NetBox TLS verification")
+@click.option("--verbose", is_flag=True, help="Enable debug logging")
+@click.option(
+    "--log-format",
+    type=click.Choice(["console", "json"]),
+    default="console",
+    help="Log output format (default: console)",
+)
 def sync_command(
     config: str,
     dry_run: bool,
@@ -79,7 +87,13 @@ def sync_command(
     netbox_token: str | None,
     vcenter_insecure: bool,
     netbox_insecure: bool,
+    verbose: bool,
+    log_format: str,
 ) -> None:
+    configure_logging(
+        log_level="DEBUG" if verbose else None,
+        log_format=log_format,  # type: ignore[arg-type]
+    )
     event_log = EventLog()
 
     try:
