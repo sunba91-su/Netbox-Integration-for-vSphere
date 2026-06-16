@@ -364,7 +364,7 @@ Add `test-unit`, `test-integration`, `build`, and `pre-commit` targets to the Ma
 
 ---
 
-### Task 5.1 — Create GitHub Actions CI workflow
+### Task 5.1 — Create GitHub Actions CI workflow ✅
 
 **Description:**
 Create `.github/workflows/ci.yml` with jobs:
@@ -381,17 +381,17 @@ Triggers: push to `main`, pull requests to `main`.
 **Estimated Complexity:** High
 
 **Definition of Done:**
-- [ ] `.github/workflows/ci.yml` exists
-- [ ] CI runs on push to `main` and PRs
-- [ ] lint job passes (ruff check + format)
-- [ ] typecheck job passes (pyright)
-- [ ] test job passes on Python 3.11, 3.12, 3.13
-- [ ] build job produces valid package
-- [ ] docker job builds successfully
+- [x] `.github/workflows/ci.yml` exists
+- [x] CI runs on push to `main` and PRs
+- [x] lint job passes (ruff check + format)
+- [x] typecheck job passes (pyright)
+- [x] test job passes on Python 3.11, 3.12, 3.13
+- [x] build job produces valid package
+- [x] docker job builds successfully
 
 ---
 
-### Task 5.2 — Create release pipeline
+### Task 5.2 — Create release pipeline ✅
 
 **Description:**
 Create `.github/workflows/release.yml` triggered on tag push (`v*`). This pipeline builds the Python package, publishes to PyPI, builds and pushes the Docker image, and creates a GitHub Release with artifacts.
@@ -401,13 +401,13 @@ Create `.github/workflows/release.yml` triggered on tag push (`v*`). This pipeli
 **Estimated Complexity:** Medium
 
 **Definition of Done:**
-- [ ] `.github/workflows/release.yml` exists
-- [ ] Triggers on tag push (`v*`)
-- [ ] Build job produces Python package (`python -m build`)
-- [ ] Publish job uploads to PyPI (`twine upload`)
-- [ ] Docker job builds and pushes image to registry
-- [ ] Release job creates GitHub Release with package artifacts
-- [ ] Secrets: `PYPI_TOKEN`, `DOCKERHUB_TOKEN` documented
+- [x] `.github/workflows/release.yml` exists
+- [x] Triggers on tag push (`v*`)
+- [x] Build job produces Python package (`python -m build`)
+- [x] Publish job uploads to PyPI (`twine upload`)
+- [x] Docker job builds and pushes image to registry
+- [x] Release job creates GitHub Release with package artifacts
+- [x] Secrets: `PYPI_TOKEN`, `DOCKERHUB_TOKEN` documented
 
 ---
 
