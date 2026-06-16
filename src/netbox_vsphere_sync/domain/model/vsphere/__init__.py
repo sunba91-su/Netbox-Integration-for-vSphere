@@ -121,3 +121,18 @@ class Datastore:
     mor: VSphereMOR | None = None
     description: str = ""
     custom_fields: dict[str, str] = field(default_factory=lambda: dict[str, str]())
+
+
+__all__ = [
+    "Cluster",
+    "Datastore",
+    "HostHardware",
+    "HostSystem",
+    "Interface",
+    "IpAddress",
+    "NetworkAddress",
+    "PortGroup",
+    "Site",
+    "VSphereMOR",
+    "Vlan",
+]

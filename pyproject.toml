@@ -56,5 +56,8 @@ addopts = "-v --tb=short"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+netbox_vsphere_sync = ["py.typed"]
+
 [tool.setuptools.dynamic]
 version = {attr = "netbox_vsphere_sync.__version__"}

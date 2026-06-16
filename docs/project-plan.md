@@ -26,7 +26,7 @@ Add `__version__ = "0.1.0"` and `__all__` to the root package `__init__.py`. Thi
 
 ---
 
-### Task 1.2 — Add `__all__` exports to all subpackage `__init__.py` files
+### Task 1.2 — Add `__all__` exports to all subpackage `__init__.py` files ✅
 
 **Description:**
 Define explicit public APIs for every subpackage using `__all__`. This follows the python-project-structure skill pattern and makes the package's public interface discoverable.
@@ -36,19 +36,19 @@ Define explicit public APIs for every subpackage using `__all__`. This follows t
 **Estimated Complexity:** Medium
 
 **Definition of Done:**
-- [ ] `domain/__init__.py` exports: entities, value objects, events, ports, exceptions, constants
-- [ ] `application/__init__.py` exports: `SyncEngine`, `DiffEngine`, `DependencyResolver`, `Bootstrapper`, `EventLog`
-- [ ] `infrastructure/netbox/__init__.py` exports: `NetBoxClient`, `NetBoxACL`, all repositories
-- [ ] `infrastructure/vsphere/__init__.py` exports: `VSphereClient`, `VSphereCollector`, `VSphereACL`
-- [ ] `infrastructure/vault/__init__.py` exports: `VaultClient`, `VaultACL`
-- [ ] `infrastructure/config/__init__.py` exports: `ConfigLoader`, `SecretResolver`, `PidLockManager`
-- [ ] `cli/__init__.py` exports: `main`
-- [ ] `report/__init__.py` exports: `ReportGenerator`, `ConsoleRenderer`
-- [ ] `make typecheck` passes with no new errors
+- [x] `domain/__init__.py` exports: entities, value objects, events, ports, exceptions, constants
+- [x] `application/__init__.py` exports: `SyncEngine`, `DiffEngine`, `DependencyResolver`, `Bootstrapper`, `EventLog`
+- [x] `infrastructure/netbox/__init__.py` exports: `NetBoxClient`, `NetBoxACL`, all repositories
+- [x] `infrastructure/vsphere/__init__.py` exports: `VSphereClient`, `VSphereCollector`, `VSphereACL`
+- [x] `infrastructure/vault/__init__.py` exports: `VaultClient`, `VaultACL`
+- [x] `infrastructure/config/__init__.py` exports: `ConfigLoader`, `SecretResolver`, `PidLockManager`
+- [x] `cli/__init__.py` exports: `main`
+- [x] `report/__init__.py` exports: `ReportGenerator`, `ConsoleReporter`
+- [x] `make typecheck` passes with no new errors
 
 ---
 
-### Task 1.3 — Add PEP 561 `py.typed` marker
+### Task 1.3 — Add PEP 561 `py.typed` marker ✅
 
 **Description:**
 Create an empty `py.typed` marker file so type checkers (pyright, mypy) recognize this package as typed per PEP 561.
@@ -58,8 +58,8 @@ Create an empty `py.typed` marker file so type checkers (pyright, mypy) recogniz
 **Estimated Complexity:** Low
 
 **Definition of Done:**
-- [ ] File `src/netbox_vsphere_sync/py.typed` exists (empty)
-- [ ] `pyproject.toml` includes `package-data` to include `py.typed` in the distribution
+- [x] File `src/netbox_vsphere_sync/py.typed` exists (empty)
+- [x] `pyproject.toml` includes `package-data` to include `py.typed` in the distribution
 
 ---
 
