@@ -39,3 +39,6 @@ class NetBoxIpAddressRepository(IpAddressRepository):
         payload = self._acl.to_netbox_ip_address(ip_address, interface_id=0)
         data = self._client.update(ENDPOINT, getattr(existing, "id", 0), payload)
         return self._acl.to_ip_address(data)
+
+    def delete(self, netbox_id: int) -> bool:
+        return self._client.delete(ENDPOINT, netbox_id)

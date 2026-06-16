@@ -47,11 +47,20 @@ class VSphereCollector(VSphereCollectorPort):
         for dc in self._client.datacenters:
             dc_name = dc.name
             folder = dc.hostFolder
+
+            # Collect hosts from clusters
             compute_refs = self._collect_objects(folder, vim.ClusterComputeResource)
             for compute in compute_refs:
                 cluster_name = compute.name
                 for host in compute.host:
                     hosts.append(self._acl.to_host(host, dc_name, cluster_name, self._vcenter_host))
+
+            # Collect standalone hosts (not in any cluster)
+            standalone_hosts = self._collect_objects(folder, vim.HostSystem)
+            for host in standalone_hosts:
+                # Check if host is not already part of a cluster
+                if host.parent and not isinstance(host.parent, vim.ClusterComputeResource):
+                    hosts.append(self._acl.to_host(host, dc_name, None, self._vcenter_host))
         return hosts
 
     def collect_port_groups(self) -> list[PortGroup]:
@@ -70,11 +79,16 @@ class VSphereCollector(VSphereCollectorPort):
 
     def collect_datastores(self) -> list[Datastore]:
         datastores: list[Datastore] = []
+        seen_mors: set[str] = set()
+
         for dc in self._client.datacenters:
             for host in self._collect_hosts_in_dc(dc):
                 if host.datastore:
                     for ds in host.datastore:
-                        datastores.append(self._acl.to_datastore(ds, host.name))
+                        mor_obj = self._acl._mor(ds)
+                        if mor_obj and mor_obj.value not in seen_mors:
+                            seen_mors.add(mor_obj.value)
+                            datastores.append(self._acl.to_datastore(ds, host.name))
         return datastores
 
     def _collect_objects(self, folder: vim.Folder, obj_type: type) -> list:

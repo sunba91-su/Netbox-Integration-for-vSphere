@@ -387,21 +387,63 @@ class SyncEngine:
         if not self._config.prune:
             return
         self._log.debug("sync.prune.start", prune_count=len(diff.to_prune))
+
+        repo_map = {
+            "site": self._site_repo,
+            "cluster": self._cluster_repo,
+            "device": self._device_repo,
+            "interface": self._interface_repo,
+            "ip_address": self._ip_repo,
+            "vlan": self._vlan_repo,
+            "inventory_item": self._inventory_repo,
+        }
+
         for entity_type, natural_key, new_status in diff.to_prune:
             try:
-                self._log.info(
-                    "entity.pruned",
-                    entity_type=entity_type,
-                    natural_key=natural_key,
-                    new_status=new_status,
-                )
-                self._event_log.record(
-                    EntityPruned(
+                repo = repo_map.get(entity_type)
+                if not repo:
+                    self._log.warning(
+                        "entity.prune_unsupported",
                         entity_type=entity_type,
                         natural_key=natural_key,
-                        new_status=new_status,
                     )
+                    continue
+
+                # Type ignore: repo_map contains different repository types
+                existing = repo.find_by_natural_key(  # type: ignore[union-attr]
+                    *self._parse_natural_key(entity_type, natural_key)  # type: ignore[arg-type]
                 )
+                if existing:
+                    netbox_id = getattr(existing, "id", None)  # type: ignore[arg-type]
+                    if netbox_id:
+                        repo.delete(netbox_id)  # type: ignore[union-attr]
+                        self._log.info(
+                            "entity.pruned",
+                            entity_type=entity_type,
+                            natural_key=natural_key,
+                            new_status=new_status,
+                            netbox_id=netbox_id,
+                        )
+                        self._event_log.record(
+                            EntityPruned(
+                                entity_type=entity_type,
+                                natural_key=natural_key,
+                                new_status=new_status,
+                            )
+                        )
+                    else:
+                        self._log.warning(
+                            "entity.prune_no_id",
+                            entity_type=entity_type,
+                            natural_key=natural_key,
+                        )
+                else:
+                    self._log.warning(
+                        "entity.prune_not_found",
+                        entity_type=entity_type,
+                        natural_key=natural_key,
+                    )
+
             except Exception as exc:
                 self._log.warning(
                     "entity.prune_failed",
@@ -417,3 +459,21 @@ class SyncEngine:
                         exception_type=type(exc).__name__,
                     )
                 )
+
+    def _parse_natural_key(self, entity_type: str, natural_key: str) -> tuple[str, ...]:
+        parts = natural_key.split(":")
+        if entity_type == "site":
+            return (parts[1],)
+        elif entity_type == "cluster":
+            return (parts[1], parts[2])
+        elif entity_type == "device":
+            return (parts[1], parts[2])
+        elif entity_type == "interface":
+            return (parts[1], parts[2])
+        elif entity_type == "ip_address":
+            return (parts[1], parts[2], parts[3])
+        elif entity_type == "vlan":
+            return (parts[1], str(int(parts[2])))
+        elif entity_type == "inventory_item":
+            return (parts[1], parts[2], parts[3])
+        return (natural_key,)

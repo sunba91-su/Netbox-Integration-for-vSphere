@@ -37,3 +37,6 @@ class NetBoxInterfaceRepository(InterfaceRepository):
         payload = self._acl.to_netbox_interface(interface, device_id=0)
         data = self._client.update(ENDPOINT, getattr(existing, "id", 0), payload)
         return self._acl.to_interface(data)
+
+    def delete(self, netbox_id: int) -> bool:
+        return self._client.delete(ENDPOINT, netbox_id)

@@ -37,3 +37,6 @@ class NetBoxVlanRepository(VlanRepository):
         payload = self._acl.to_netbox_vlan(vlan)
         data = self._client.update(ENDPOINT, getattr(existing, "id", 0), payload)
         return self._acl.to_vlan(data)
+
+    def delete(self, netbox_id: int) -> bool:
+        return self._client.delete(ENDPOINT, netbox_id)

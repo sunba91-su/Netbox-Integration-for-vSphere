@@ -179,3 +179,27 @@ class NetBoxClient:
             raise NetBoxConnectionError(
                 f"Failed to update {endpoint} id={netbox_id}: {exc}"
             ) from exc
+
+    def delete(self, endpoint: str, netbox_id: int) -> bool:
+        log.debug("netbox.delete.start", endpoint=endpoint, netbox_id=netbox_id)
+        try:
+            app_model = endpoint.split(".")
+            app = getattr(self.api, app_model[0])
+            model = getattr(app, app_model[1])
+            obj = self._retry("delete.get", lambda: model.get(netbox_id))
+            if obj:
+                self._retry("delete.apply", lambda: obj.delete())
+                log.info("netbox.delete.complete", endpoint=endpoint, netbox_id=netbox_id)
+                return True
+            log.warning("netbox.delete.not_found", endpoint=endpoint, netbox_id=netbox_id)
+            return False
+        except Exception as exc:
+            log.warning(
+                "netbox.delete.failed",
+                endpoint=endpoint,
+                netbox_id=netbox_id,
+                error=str(exc),
+            )
+            raise NetBoxConnectionError(
+                f"Failed to delete {endpoint} id={netbox_id}: {exc}"
+            ) from exc
