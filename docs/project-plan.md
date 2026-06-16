@@ -119,7 +119,7 @@ Create the Apache 2.0 LICENSE file at the repository root. This is referenced in
 
 ---
 
-### Task 2.1 — Create logging configuration module
+### Task 2.1 — Create logging configuration module ✅
 
 **Description:**
 Create `report/logging_config.py` with a `configure_logging()` function that sets up structlog with console (dev) and JSON (prod) renderers, timestamp formatting, and sensitive key filtering (`password`, `token`, `secret` → `****`). Log level configurable via `NVS_LOG_LEVEL` env var.
@@ -129,11 +129,11 @@ Create `report/logging_config.py` with a `configure_logging()` function that set
 **Estimated Complexity:** Medium
 
 **Definition of Done:**
-- [ ] `report/logging_config.py` exists with `configure_logging(log_level, log_format)` function
-- [ ] Sensitive key processor masks `password`, `token`, `secret`, `secret_id` fields
-- [ ] Console renderer produces human-readable output
-- [ ] JSON renderer produces valid JSON
-- [ ] Unit test verifies sensitive key filtering works
+- [x] `report/logging_config.py` exists with `configure_logging(log_level, log_format)` function
+- [x] Sensitive key processor masks `password`, `token`, `secret`, `secret_id` fields
+- [x] Console renderer produces human-readable output
+- [x] JSON renderer produces valid JSON
+- [x] Unit test verifies sensitive key filtering works
 
 ---
 
