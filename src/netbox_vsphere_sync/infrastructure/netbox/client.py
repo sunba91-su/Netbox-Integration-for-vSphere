@@ -1,5 +1,8 @@
 from __future__ import annotations
 
+import time
+from typing import Any
+
 import pynetbox
 import structlog
 
@@ -7,6 +10,9 @@ from netbox_vsphere_sync.domain.exceptions import NetBoxConnectionError
 from netbox_vsphere_sync.domain.model.config import NetBoxConfig
 
 log = structlog.get_logger(__name__)
+
+_MAX_RETRIES = 3
+_BACKOFF_BASE = 2
 
 
 class NetBoxClient:
@@ -20,8 +26,10 @@ class NetBoxClient:
             self._api = pynetbox.api(
                 url=self._config.url,
                 token=self._config.token,
+                threading=True,
             )
             self._api.http_session.verify = self._config.verify_ssl
+            self._api.http_session.timeout = self._config.request_timeout
             self._api.status()
             log.info("netbox.connect.complete", url=self._config.url)
         except Exception as exc:
@@ -36,15 +44,53 @@ class NetBoxClient:
             raise NetBoxConnectionError("Not connected to NetBox")
         return self._api
 
-    def list_all(self, endpoint: str) -> list[dict]:
-        log.debug("netbox.list_all.start", endpoint=endpoint)
+    def _retry(self, operation: str, func: Any, *args: Any, **kwargs: Any) -> Any:
+        """Execute func with exponential backoff retry on transient errors."""
+        last_exc: Exception | None = None
+        for attempt in range(1, self._config.max_retries + 1):
+            try:
+                return func(*args, **kwargs)
+            except (ConnectionError, TimeoutError) as exc:
+                last_exc = exc
+                if attempt < self._config.max_retries:
+                    delay = _BACKOFF_BASE**attempt
+                    log.warning(
+                        "netbox.retry",
+                        operation=operation,
+                        attempt=attempt,
+                        max_retries=self._config.max_retries,
+                        delay_seconds=delay,
+                    )
+                    time.sleep(delay)
+        raise last_exc  # type: ignore[misc]
+
+    def list_all(
+        self,
+        endpoint: str,
+        brief: bool = True,
+        exclude_config_context: bool = True,
+    ) -> list[dict]:
+        log.debug("netbox.list_all.start", endpoint=endpoint, brief=brief)
         try:
             app_model = endpoint.split(".")
             if len(app_model) != 2:
                 return []
             app = getattr(self.api, app_model[0])
             model = getattr(app, app_model[1])
-            items = [dict(item) for item in model.all()]
+
+            kwargs: dict[str, Any] = {}
+            if brief:
+                kwargs["brief"] = True
+            if exclude_config_context and endpoint in (
+                "dcim.devices",
+                "virtualization.clusters",
+            ):
+                kwargs["exclude"] = "config_context"
+
+            items = self._retry(
+                "list_all",
+                lambda: [dict(item) for item in model.all(**kwargs)],
+            )
             log.debug("netbox.list_all.complete", endpoint=endpoint, count=len(items))
             return items
         except Exception as exc:
@@ -59,7 +105,10 @@ class NetBoxClient:
                 return None
             app = getattr(self.api, app_model[0])
             model = getattr(app, app_model[1])
-            result = model.get(**{field: value})
+            result = self._retry(
+                "get_by_field",
+                lambda: model.get(**{field: value}),
+            )
             found = dict(result) if result else None
             log.debug(
                 "netbox.get_by_field.complete",
@@ -83,7 +132,7 @@ class NetBoxClient:
             app_model = endpoint.split(".")
             app = getattr(self.api, app_model[0])
             model = getattr(app, app_model[1])
-            result = model.create(data)
+            result = self._retry("create", lambda: model.create(data))
             log.info("netbox.create.complete", endpoint=endpoint)
             return dict(result) if result else {}
         except Exception as exc:
@@ -96,9 +145,9 @@ class NetBoxClient:
             app_model = endpoint.split(".")
             app = getattr(self.api, app_model[0])
             model = getattr(app, app_model[1])
-            obj = model.get(netbox_id)
+            obj = self._retry("update.get", lambda: model.get(netbox_id))
             if obj:
-                result = obj.update(data)
+                result = self._retry("update.apply", lambda: obj.update(data))
                 log.info("netbox.update.complete", endpoint=endpoint, netbox_id=netbox_id)
                 return dict(result) if result else {}
             log.warning("netbox.update.not_found", endpoint=endpoint, netbox_id=netbox_id)

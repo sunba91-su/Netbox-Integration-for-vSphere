@@ -182,7 +182,7 @@ Add `--verbose` flag (sets log level to DEBUG) and `--log-format` option (`conso
 
 ---
 
-### Task 3.1 — Enhance `NetBoxClient` with pagination, brief mode, and timeouts
+### Task 3.1 — Enhance `NetBoxClient` with pagination, brief mode, and timeouts ✅
 
 **Description:**
 Update `NetBoxClient` to:
@@ -197,16 +197,16 @@ Update `NetBoxClient` to:
 **Estimated Complexity:** Medium
 
 **Definition of Done:**
-- [ ] `NetBoxClient.__init__` accepts `timeout`, `brief_mode`, `exclude_config_context` params
-- [ ] `list_all()` method passes `brief=True` when enabled
-- [ ] Device/cluster list calls exclude `config_context` by default
-- [ ] Retry logic handles transient errors (max 3 retries, exponential backoff)
-- [ ] Existing unit tests still pass
-- [ ] `make typecheck` passes
+- [x] `NetBoxClient.__init__` accepts `timeout`, `brief_mode`, `exclude_config_context` params
+- [x] `list_all()` method passes `brief=True` when enabled
+- [x] Device/cluster list calls exclude `config_context` by default
+- [x] Retry logic handles transient errors (max 3 retries, exponential backoff)
+- [x] Existing unit tests still pass
+- [x] `make typecheck` passes
 
 ---
 
-### Task 3.2 — Add NetBox configuration options
+### Task 3.2 — Add NetBox configuration options ✅
 
 **Description:**
 Extend `NetBoxConfig` Pydantic model with new fields: `brief_mode`, `exclude_config_context`, `request_timeout`, `max_retries`. These have sensible defaults and are configurable via YAML.
@@ -216,10 +216,10 @@ Extend `NetBoxConfig` Pydantic model with new fields: `brief_mode`, `exclude_con
 **Estimated Complexity:** Low
 
 **Definition of Done:**
-- [ ] `NetBoxConfig` has new fields with defaults: `brief_mode=True`, `exclude_config_context=True`, `request_timeout=120`, `max_retries=3`
-- [ ] Existing config loading still works (backwards compatible)
-- [ ] YAML config can override these values
-- [ ] `make test` passes
+- [x] `NetBoxConfig` has new fields with defaults: `brief_mode=True`, `exclude_config_context=True`, `request_timeout=120`, `max_retries=3`
+- [x] Existing config loading still works (backwards compatible)
+- [x] YAML config can override these values
+- [x] `make test` passes
 
 ---
 
