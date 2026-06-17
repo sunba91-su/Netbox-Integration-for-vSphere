@@ -1,7 +1,8 @@
-# Stage 1: Install dependencies
+# Stage 1: Install dependencies and package
 FROM python:3.13-slim AS deps
 WORKDIR /app
 COPY pyproject.toml ./
+COPY src/ src/
 RUN pip install --no-cache-dir --prefix=/install .
 
 
