@@ -1,9 +1,11 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, Field, model_validator
+from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 class VCenterConfig(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
     host: str = ""
     username: str = Field(default="", validation_alias="NVS_VCENTER_USERNAME")
     password: str = Field(default="", validation_alias="NVS_VCENTER_PASSWORD")

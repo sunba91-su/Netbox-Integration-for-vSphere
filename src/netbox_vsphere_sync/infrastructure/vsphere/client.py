@@ -22,7 +22,7 @@ class VSphereClient:
                 host=self._config.host,
                 user=self._config.username,
                 pwd=self._config.password,
-                ssl=not self._config.verify_ssl,
+                disableSslCertValidation=not self._config.verify_ssl,
             )
             log.info("vsphere.connect.complete", host=self._config.host)
         except Exception as exc:

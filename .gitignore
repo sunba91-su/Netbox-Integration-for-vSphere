@@ -20,3 +20,4 @@ Thumbs.db
 
 # Config (user-specific)
 *.local.yaml
+config.yaml
