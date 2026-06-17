@@ -24,13 +24,22 @@ class NetBoxBootstrapRepository(NetBoxBootstrap):
         )
 
     def ensure_cluster_type(self, name: str) -> None:
-        existing = self._client.get_by_field("dcim.cluster_types", "name", name)
-        if existing:
-            return
-        self._client.create("dcim.cluster_types", {"name": name, "slug": self._slug(name)})
+        # Cluster types endpoint not available in all NetBox versions
+        # Skip if not available
+        try:
+            existing = self._client.get_by_field("dcim.cluster_types", "name", name)
+            if existing:
+                return
+            self._client.create("dcim.cluster_types", {"name": name, "slug": self._slug(name)})
+        except Exception as exc:
+            # Endpoint not available in this NetBox version, skip
+            import structlog
+            log = structlog.get_logger(__name__)
+            log.debug("cluster_types_endpoint_unavailable", error=str(exc))
 
     def ensure_custom_fields(self) -> None:
-        existing = self._client.list_all("extras.custom_fields")
+        # Custom fields endpoint doesn't support brief parameter
+        existing = self._client.list_all("extras.custom_fields", brief=False, exclude_config_context=False)
         existing_names = {d.get("name") for d in existing}
 
         from netbox_vsphere_sync.domain.constants import CUSTOM_FIELD_DEFINITIONS

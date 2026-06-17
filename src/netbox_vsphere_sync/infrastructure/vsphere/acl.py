@@ -168,13 +168,15 @@ class VSphereACL:
         hardware = host.hardware
         if not hardware:
             return None
+        cpu_info = hardware.cpuInfo
+        sys_info = hardware.systemInfo
         return HostHardware(
-            cpu_model=hardware.cpuInfo.model or "",
-            cpu_cores=hardware.cpuInfo.numCpuCores or 0,
-            cpu_sockets=hardware.cpuInfo.numCpuPkgs or 0,
-            memory_gb=float(hardware.memorySize or 0) / (1024**3),
-            model=hardware.systemInfo.model or "",
-            serial=hardware.systemInfo.serialNumber or "",
+            cpu_model=getattr(cpu_info, "cpuModel", getattr(cpu_info, "model", "")) or "",
+            cpu_cores=getattr(cpu_info, "numCpuCores", 0) or 0,
+            cpu_sockets=getattr(cpu_info, "numCpuPkgs", 0) or 0,
+            memory_gb=float(getattr(hardware, "memorySize", 0) or 0) / (1024**3),
+            model=getattr(sys_info, "model", "") or "",
+            serial=getattr(sys_info, "serialNumber", "") or "",
         )
 
     def _mor(self, obj: object) -> VSphereMOR | None:
