@@ -1,0 +1,40 @@
+# config.example.yaml — Template for netbox-vsphere-sync
+# Copy to config.yaml and fill in your values.
+# Sensitive fields (token, password) can be set via environment variables instead.
+
+netbox:
+  url: "https://netbox.example.com"
+  token: ""                    # or set NVS_NETBOX_TOKEN env var
+  verify_ssl: true
+  brief_mode: true
+  exclude_config_context: true
+  request_timeout: 120
+  max_retries: 3
+
+vcenter:
+  host: "vcenter.example.com"
+  username: ""                 # or set NVS_VCENTER_USERNAME env var
+  password: ""                 # or set NVS_VCENTER_PASSWORD env var
+  verify_ssl: true
+
+vault:
+  enabled: false
+  url: ""
+  token: ""
+  verify_ssl: true
+  secret_path: "secret/data/netbox-vsphere-sync"
+
+sync:
+  dry_run: true
+  prune: false
+  poll_interval_seconds: 1800
+
+bootstrap:
+  enabled: true
+  manufacturer_name: "VMware Inc"
+  device_role_name: "ESXi Server"
+  cluster_type_name: "vSphere Cluster"
+
+inventory:
+  role: "Storage"
+  include_datastores: true
